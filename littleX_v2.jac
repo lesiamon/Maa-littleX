@@ -8,7 +8,6 @@ node Hastag {
 
 node Feed_node {
     has Tag_prob:dict = {};
-    has Followee_prob:dict = {};
     has n:int = 0;
     @classmethod
     can Update_prob(tag:str){
