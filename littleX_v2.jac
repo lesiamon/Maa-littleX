@@ -89,7 +89,7 @@ walker tweet {
         model = SentenceTransformer('sentence-transformers/multi-qa-mpnet-base-cos-v1');
         embedding = model.encode(self.content);
 
-        tweet_node +:Tweeting():+> (user_tweet := Tweet(self.content, self.tag));
+        tweet_node +:Tweeting():+> (user_tweet := Tweet(self.content, self.tag, embedding));
         Feed_node.Update_prob(user_tweet.tag);
         tags = [i.tag for i in [hastag_node-->]];
         if self.tag not in tags {
@@ -108,7 +108,7 @@ walker comment {
     can comment with `root entry {
         model = SentenceTransformer('sentence-transformers/multi-qa-mpnet-base-cos-v1');
         embedding = model.encode(self.content);
-        (tweet:=&(self.tweet_jid)) +:Reply():+> (user_comment := Comment(self.content,embedding));
+        (tweet:=&(self.tweet_jid)) +:Reply():+> (user_comment := Comment(self.content, embedding));
         Feed_node.Update_prob(tweet.tag);
         report user_comment;
     }
