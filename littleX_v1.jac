@@ -11,12 +11,10 @@ node Tweet_node {}
 node Tweet {
     has content: str;
     has tag: str;
-    # has emmbedding:np.array;
 }
 
 node Comment {
     has content: str;
-    # has emmbedding:np.array;
 }
 
 edge Following {}
@@ -36,9 +34,9 @@ walker Start {
         feed_node = Feed_node();
         tweet_node = Tweet_node();
         root ++> [feed_node, tweet_node];
+        Jac.unrestrict(tweet_node, 1);
         report feed_node;
         report tweet_node;
-        report [root-->];
     }
 }
 
@@ -47,7 +45,6 @@ walker follow_request {
 
     can follow with `root entry {
         root +:Following():+> (&(self.followee_tnode_jid));
-        report [root-->];
     }
 }
 
@@ -59,13 +56,14 @@ walker tweet {
         :g: tweet_node ;
 
         tweet_node +:Tweeting():+> (user_tweet := Tweet(self.content, self.tag));
-        tags = [i.tag for i in [hastag_node-->]];
-        if self.tag not in tags {
-            hastag_node ++> Hastag(self.tag);
+        if (i := [hastag_node-->](?tag == self.tag)) {
+            i[0] ++> user_tweet;
+        } else {
+            hastag_node ++> (hastag := Hastag(self.tag));
+            hastag ++> user_tweet;
         }
         Jac.unrestrict(user_tweet, 1);
         report user_tweet;
-        report [hastag_node-->];
     }
 }
 
@@ -81,15 +79,9 @@ walker comment {
 
 walker load_feed {
     can feed with `root entry {
-        feed_list = [];
-        followee_list = [root-:Following:->];
-        
-        for followee in followee_list {
-            for tweet in [followee-->] {
-                feed_list.append(jid(tweet));
-            }
+        for tweet in [root-:Following:->-:Tweeting:->] {
+            report tweet;
         }
-        report [&i for i in feed_list];
     }
 }
 
@@ -97,16 +89,10 @@ walker search {
     has query: str;
 
     can Search with entry {
-        search_tag: any = None;
         :g: hastag_node ;
 
-        hastag_list = [i for i in [hastag_node-->]];
-        
-        for hastag in hastag_list {
-            if hastag.tag == self.query {
-                search_tag = hastag;
-            }
+        if (i := [hastag_node-->](?tag == self.query)) {
+            report [i[0]-->];
         }
-        report [search_tag-->] if search_tag else None;
     }
 }
