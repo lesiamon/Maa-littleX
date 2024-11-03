@@ -1,4 +1,5 @@
 import:py from sentence_transformers { SentenceTransformer, util }
+import:py numpy;
 node Hastag_node {}
 
 node Hastag {
@@ -91,7 +92,7 @@ walker tweet {
     has tag: str;
 
     can tweet with `root entry {
-        :g: tweet_node ;
+        :g: tweet_node, hastag_node ;
 
 
         tweet_node +:Tweeting():+> (user_tweet := Tweet(self.content, self.tag));
