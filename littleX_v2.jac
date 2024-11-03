@@ -1,5 +1,4 @@
 import:py from sentence_transformers { SentenceTransformer, util }
-import:py numpy;
 node Hastag_node {}
 
 node Hastag {
