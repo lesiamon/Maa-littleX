@@ -1,3 +1,4 @@
+import:py from sentence_transformers { SentenceTransformer, util }
 node Hastag_node {}
 
 node Hastag {
@@ -5,6 +6,8 @@ node Hastag {
 }
 
 node Feed_node {}
+
+node Tweet_main {}
 
 node Tweet_node {}
 
@@ -23,17 +26,23 @@ edge Tweeting {}
 
 edge Reply {}
 
+glob model:SentenceTransformer = SentenceTransformer(
+    'sentence-transformers/multi-qa-mpnet-base-cos-v1'
+);
 glob hastag_node:Hastag_node = Hastag_node();
+glob tweet_main:Tweet_main = Tweet_main();
 glob tweet_node:Tweet_node;
 
 walker Start {
     can start with `root entry {
         :g: tweet_node ;
 
+
         Jac.unrestrict(here, 1);
         feed_node = Feed_node();
         tweet_node = Tweet_node();
         root ++> [feed_node, tweet_node];
+        tweet_main ++> tweet_node;
         Jac.unrestrict(tweet_node, 1);
         report feed_node;
         report tweet_node;
@@ -54,6 +63,7 @@ walker tweet {
 
     can tweet with `root entry {
         :g: tweet_node ;
+
 
         tweet_node +:Tweeting():+> (user_tweet := Tweet(self.content, self.tag));
         if (i := [hastag_node-->](?tag == self.tag)) {
@@ -91,8 +101,24 @@ walker search {
     can Search with entry {
         :g: hastag_node ;
 
+
         if (i := [hastag_node-->](?tag == self.query)) {
             report [i[0]-->];
+        } else {
+            for user in [tweet_main-->] {
+                tweets = [tweet for tweet in [user-->]];
+                docs = [tweet.content for tweet in [user-->]];
+            }
+            query_emb = model.encode(self.query);
+            doc_emb = model.encode(docs);
+            scores = util.dot_score(query_emb, doc_emb)[0].cpu().tolist();
+            doc_score_pairs = list(zip([i for (i, _) in enumerate(docs)], scores));
+            doc_score_pairs = sorted(
+                doc_score_pairs,
+                key=(with x: int can x[1]), reverse=True
+            );
+            Tweets = [tweets[i] for (i, _) in doc_score_pairs[:5]];
+            report Tweets;
         }
     }
 }
