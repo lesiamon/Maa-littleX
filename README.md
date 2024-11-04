@@ -7,4 +7,4 @@ littleX is a minimalistic social media platform prototype developed using the Ja
 - `littleX_v2.jac` => No Encryption, Customized feed
 - `littleX_v21.jac` => Encryption, Customized feed
 
-![Architecture](images/Architecture.png)
+![Architecture](images/image.png)
