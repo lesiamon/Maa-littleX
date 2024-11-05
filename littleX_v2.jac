@@ -69,11 +69,7 @@ glob cipher_suite:Fernet;
 
 walker Start {
     can start with `root entry {
-        :g: tweet_node ;
-        :g: feed_obj ;
-        :g: tweet_main ;
-        :g: key ;
-        :g: cipher_suite ;
+        :g: tweet_main, tweet_node, feed_obj, key, cipher_suite ;
 
         key = Fernet.generate_key();
         cipher_suite = Fernet(key);
@@ -98,9 +94,7 @@ walker tweet {
     has tag: str;
 
     can tweet with `root entry {
-        :g: tweet_node ;
-        :g: hastag_node ;
-        :g: feed_obj ;
+        :g: tweet_node, hastag_node, feed_obj ;
 
         encrypted_bytes = cipher_suite.encrypt(self.content.encode());
         encrypted = base64.urlsafe_b64encode(encrypted_bytes).decode();
@@ -132,8 +126,7 @@ walker comment {
     has content: str;
 
     can comment with `root entry {
-        :g: cipher_suite ;
-        :g: feed_obj ;
+        :g: cipher_suite, feed_obj ;
 
         encrypted_bytes = cipher_suite.encrypt(self.content.encode());
         encrypted = base64.urlsafe_b64encode(encrypted_bytes).decode();
@@ -145,8 +138,7 @@ walker comment {
 
 walker load_feed {
     can feed with `root entry {
-        :g: hastag_node ;
-        :g: feed_obj ;
+        :g: hastag_node, feed_obj ;
 
         for tweet in [root-:Following:->-:Tweeting:->] {
             report tweet;
