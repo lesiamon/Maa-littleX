@@ -92,7 +92,7 @@ walker tweet {
         :g: tweet_node, hastag_node, feed_obj, model ;
 
         embedding = model.encode(self.content);
-        embedding_str = base64.b64encode(embedding);
+        embedding_str = base64.b64encode(embedding).decode('utf-8');
         tweet_node +:Tweeting():+> (user_tweet := Tweet(self.content, self.tag, embedding_str));
         hastag_node +:Hastag(self.tag):+> user_tweet;
         feed_obj.update_count(user_tweet.tag);
@@ -119,7 +119,7 @@ walker comment {
         :g: feed_obj, model ;
 
         embedding = model.encode(self.content);
-        embedding_str = base64.b64encode(embedding);
+        embedding_str = base64.b64encode(embedding).decode('utf-8');
         (tweet := &(self.tweet_jid)) +:Reply():+> (user_comment := Comment(self.content, embedding_str));
         feed_obj.update_count(tweet.tag);
         report user_comment;
