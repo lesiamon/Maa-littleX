@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Login - littleX</title>
+    <link rel="stylesheet" href="index.css" />
+  </head>
+  <body>
+    <div class="container">
+      <h1>Welcome to littleX</h1>
+      <div class="tabs">
+        <button class="tab-button active" data-tab="register-section">
+          Sign Up
+        </button>
+        <button class="tab-button" data-tab="login-section">Login</button>
+      </div>
+      <div id="register-section" class="tab-content active">
+        <h2>Register</h2>
+        <input type="email" id="register-email" placeholder="Email" required />
+        <input
+          type="password"
+          id="register-password"
+          placeholder="Password"
+          required
+        />
+        <button id="register-btn">Register</button>
+      </div>
+      <div id="login-section" class="tab-content">
+        <h2>Login</h2>
+        <input type="email" id="login-email" placeholder="Email" required />
+        <input
+          type="password"
+          id="login-password"
+          placeholder="Password"
+          required
+        />
+        <button id="login-btn">Login</button>
+      </div>
+    </div>
+
+    <script src="login.js"></script>
+  </body>
+</html>
