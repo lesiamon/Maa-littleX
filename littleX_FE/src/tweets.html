@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>littleX Tweets</title>
+    <link rel="stylesheet" href="tweets.css" />
+    <link
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css"
+      rel="stylesheet"
+    />
+  </head>
+  <body>
+    <div class="tweets-container">
+      <header>
+        <h1>littleX Tweets</h1>
+        <button id="logoutButton">Logout</button>
+      </header>
+      <div id="tweets">
+        <!-- Tweets will be dynamically loaded here -->
+      </div>
+      <form id="tweetForm">
+        <textarea
+          id="tweetContent"
+          placeholder="What's on your mind?"
+          rows="3"
+          required
+        ></textarea>
+        <button type="submit">Tweet</button>
+      </form>
+    </div>
+
+    <script src="tweets.js"></script>
+  </body>
+</html>
