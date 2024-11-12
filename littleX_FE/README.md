@@ -1,1 +1,1 @@
-This directory contains file of littleX front end
+This directory contains file of littleX frontend
