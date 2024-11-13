@@ -3,20 +3,6 @@ import:py base64;
 import:py from jac_cloud.jaseci.models {User as BaseUser, NO_PASSWORD}
 node Hastag_node {}
 
-can config_server() {
-    import:py from jac_cloud { FastAPI }
-    import:py from fastapi.middleware.cors { CORSMiddleware }
-    FastAPI.get().add_middleware(
-        CORSMiddleware,
-        allow_origins=["*"], allow_credentials=True, allow_methods=["*"], allow_headers=["*"]
-    );
-    FastAPI.enable();
-}
-
-with entry:__main__ {
-    config_server();
-}
-
 node Feed_node {
     has count_tag: dict = {};
     has total_count: int = 0;
@@ -182,4 +168,18 @@ walker search {
             report Tweets;
         }
     }
+}
+
+can config_server() {
+    import:py from jac_cloud { FastAPI }
+    import:py from fastapi.middleware.cors { CORSMiddleware }
+    FastAPI.get().add_middleware(
+        CORSMiddleware,
+        allow_origins=["*"], allow_credentials=True, allow_methods=["*"], allow_headers=["*"]
+    );
+    FastAPI.enable();
+}
+
+with entry:__main__ {
+    config_server();
 }
