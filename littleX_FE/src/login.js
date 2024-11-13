@@ -40,9 +40,7 @@ document.getElementById("register-btn").addEventListener("click", async () => {
       return;
     }
 
-    alert(
-      "Registration successful. A verification code has been sent to your email."
-    );
+    alert("Registration successful.");
   } catch (error) {
     console.error("Error during registration:", error);
     alert("An error occurred. Please try again later.");
@@ -104,7 +102,6 @@ document.getElementById("login-btn").addEventListener("click", async () => {
     alert("Walker started successfully!");
     console.log("Walker response:", walkerData);
 
-    // Redirect if needed
     window.location.href = "tweets.html";
   } catch (error) {
     console.error("Error during login or starting walker:", error);
