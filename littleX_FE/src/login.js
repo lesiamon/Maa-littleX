@@ -25,7 +25,6 @@ document.getElementById("register-btn").addEventListener("click", async () => {
   }
 
   try {
-    // Register the user
     const response = await fetch(`${BASE_URL}/register`, {
       method: "POST",
       headers: {
@@ -44,42 +43,13 @@ document.getElementById("register-btn").addEventListener("click", async () => {
     alert(
       "Registration successful. A verification code has been sent to your email."
     );
-    // Send verification code
-    await fetch(`${BASE_URL}/send-verification-code`, {
-      method: "POST",
-      headers: {
-        accept: "application/json",
-      },
-    });
-
-    // Prompt user to enter verification code
-    const code = prompt("Enter the verification code sent to your email:");
-
-    if (code) {
-      const verifyResponse = await fetch(`${BASE_URL}/verify`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          accept: "application/json",
-        },
-        body: JSON.stringify({ code }),
-      });
-
-      if (!verifyResponse.ok) {
-        const error = await verifyResponse.json();
-        alert(`Verification failed: ${error.message}`);
-        return;
-      }
-
-      alert("Verification successful! You can now log in.");
-    }
   } catch (error) {
-    console.error("Error during registration or verification:", error);
+    console.error("Error during registration:", error);
     alert("An error occurred. Please try again later.");
   }
 });
 
-// Login User
+// Login User and Start Walker
 document.getElementById("login-btn").addEventListener("click", async () => {
   const email = document.getElementById("login-email").value;
   const password = document.getElementById("login-password").value;
@@ -90,7 +60,7 @@ document.getElementById("login-btn").addEventListener("click", async () => {
   }
 
   try {
-    const response = await fetch(`${BASE_URL}/login`, {
+    const loginResponse = await fetch(`${BASE_URL}/login`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -99,18 +69,45 @@ document.getElementById("login-btn").addEventListener("click", async () => {
       body: JSON.stringify({ email, password }),
     });
 
-    if (!response.ok) {
-      const error = await response.json();
+    if (!loginResponse.ok) {
+      const error = await loginResponse.json();
       alert(`Login failed: ${error.message}`);
       return;
     }
 
-    const data = await response.json();
-    localStorage.setItem("littleXUser", email);
-    alert(`Authentication code: ${data.authCode}`);
+    const loginData = await loginResponse.json();
+    const token = loginData.token;
+
+    // Save token in localStorage
+    localStorage.setItem("authToken", token);
+
+    alert("Login successful!");
+
+    // Automatically call walker/Start
+    const walkerResponse = await fetch("http://0.0.0.0:8000/walker/Start", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        accept: "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify({}), // Add request body if required
+    });
+
+    if (!walkerResponse.ok) {
+      const walkerError = await walkerResponse.json();
+      alert(`Failed to start walker: ${walkerError.message}`);
+      return;
+    }
+
+    const walkerData = await walkerResponse.json();
+    alert("Walker started successfully!");
+    console.log("Walker response:", walkerData);
+
+    // Redirect if needed
     window.location.href = "tweets.html";
   } catch (error) {
-    console.error("Error during login:", error);
+    console.error("Error during login or starting walker:", error);
     alert("An error occurred. Please try again later.");
   }
 });

@@ -2,6 +2,20 @@ import:py from sentence_transformers { SentenceTransformer, util }
 import:py base64;
 node Hastag_node {}
 
+can config_server() {
+    import:py from jac_cloud { FastAPI }
+    import:py from fastapi.middleware.cors { CORSMiddleware }
+    FastAPI.get().add_middleware(
+        CORSMiddleware,
+        allow_origins=["*"], allow_credentials=True, allow_methods=["*"], allow_headers=["*"]
+    );
+    FastAPI.enable();
+}
+
+with entry:__main__ {
+    config_server();
+}
+
 obj Feed_node {
     has count_tag: dict = {};
     has total_count: int = 0;
