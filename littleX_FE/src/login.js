@@ -89,7 +89,7 @@ document.getElementById("login-btn").addEventListener("click", async () => {
         accept: "application/json",
         Authorization: `Bearer ${token}`,
       },
-      body: JSON.stringify({}), // Add request body if required
+      body: JSON.stringify({}),
     });
 
     if (!walkerResponse.ok) {
