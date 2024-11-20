@@ -48,6 +48,7 @@ document.getElementById("register-btn").addEventListener("click", async () => {
 });
 
 // Login User and Start Walker
+// Login User and Start Walker
 document.getElementById("login-btn").addEventListener("click", async () => {
   const email = document.getElementById("login-email").value;
   const password = document.getElementById("login-password").value;
@@ -81,30 +82,59 @@ document.getElementById("login-btn").addEventListener("click", async () => {
 
     alert("Login successful!");
 
-    // Automatically call walker/Start
-    const walkerResponse = await fetch("http://0.0.0.0:8000/walker/Start", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        accept: "application/json",
-        Authorization: `Bearer ${token}`,
-      },
-      body: JSON.stringify({}),
-    });
+    // Check user profile
+    const profileResponse = await fetch(
+      "http://0.0.0.0:8000/walker/get_profile",
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          accept: "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
 
-    if (!walkerResponse.ok) {
-      const walkerError = await walkerResponse.json();
-      alert(`Failed to start walker: ${walkerError.message}`);
-      return;
+    if (!profileResponse.ok) {
+      console.error("Failed to fetch user profile");
+    } else {
+      const profileData = await profileResponse.json();
+      const username = profileData.reports[0].context.username;
+
+      if (!username) {
+        // Prompt user for a new username
+        const newUsername = prompt("Please enter a username:");
+        if (newUsername) {
+          const updateProfileResponse = await fetch(
+            "http://0.0.0.0:8000/walker/update_profile",
+            {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+                accept: "application/json",
+                Authorization: `Bearer ${token}`,
+              },
+              body: JSON.stringify({ new_username: newUsername }),
+            }
+          );
+
+          if (!updateProfileResponse.ok) {
+            console.error("Failed to update username");
+          } else {
+            console.log("Username updated successfully");
+          }
+        }
+      }
     }
-
-    const walkerData = await walkerResponse.json();
-    alert("Walker started successfully!");
-    console.log("Walker response:", walkerData);
-
     window.location.href = "tweets.html";
   } catch (error) {
     console.error("Error during login or starting walker:", error);
     alert("An error occurred. Please try again later.");
   }
+});
+
+// Logout User
+document.getElementById("logout-btn").addEventListener("click", () => {
+  localStorage.removeItem("authToken");
+  alert("Logged out successfully!");
 });

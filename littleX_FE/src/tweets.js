@@ -1,144 +1,151 @@
-// Check if the user is logged in
-const user = localStorage.getItem("authToken");
-if (!user) {
+const token = localStorage.getItem("authToken");
+if (!token) {
   window.location.href = "index.html";
 }
 
-// Logout functionality
 document.getElementById("logoutButton").addEventListener("click", () => {
   localStorage.removeItem("authToken");
   window.location.href = "index.html";
 });
 
-// Sample tweets
-const sampleTweets = [
-  {
-    user: "Alice",
-    content: "This is my first tweet on littleX!",
-    tags: ["#welcome"],
-    likes: 0,
-    comments: [],
-  },
-  {
-    user: "Bob",
-    content: "Loving the simplicity of this platform.",
-    tags: ["#simple", "#userFriendly"],
-    likes: 2,
-    comments: [],
-  },
-];
+const BASE_URL = "http://0.0.0.0:8000/walker";
 
-// Track followed users
-const followedUsers = new Set();
+function renderTweet(tweet) {
+  const tweetDiv = document.createElement("div");
+  tweetDiv.className = "tweet";
+  tweetDiv.innerHTML = `
+    <p class="content">${tweet.content}</p>
+    <div class="tweet-actions">
+      <button class="like-btn" data-id="${tweet.id}">
+        <i class="fas fa-heart"></i> Like
+      </button>
+      <button class="comment-btn" data-id="${tweet.id}">Comment</button>
+    </div>
+    <div class="comments" id="comments-${tweet.id}"></div>
+  `;
 
-// Function to render tweets
-const tweetsDiv = document.getElementById("tweets");
-function renderTweets() {
-  tweetsDiv.innerHTML = ""; // Clear current tweets
-  sampleTweets.forEach((tweet, index) => {
-    const isFollowing = followedUsers.has(tweet.user);
-    const tweetDiv = document.createElement("div");
-    tweetDiv.className = "tweet";
-    tweetDiv.innerHTML = `
-      <span class="user">${tweet.user}
-        <button class="follow-btn ${
-          isFollowing ? "following" : ""
-        }" data-user="${tweet.user}">
-          ${isFollowing ? "Following" : "Follow"}
-        </button>
-      </span>
-      <p class="content">${tweet.content}</p>
-      <p class="tags">${formatTags(tweet.tags)}</p>
-      <div class="tweet-actions">
-        <button class="like-btn" data-index="${index}">
-          <i class="fas fa-heart"></i> (<span class="like-count">${
-            tweet.likes
-          }</span>)
-        </button>
-        <button class="comment-btn" data-index="${index}">Comment</button>
-      </div>
-      <div class="comments" id="comments-${index}">
-        ${tweet.comments
-          .map(
-            (comment) => `
-          <div class="comment">
-            <strong>${comment.user}:</strong> ${comment.content}
-          </div>
-        `
-          )
-          .join("")}
-      </div>
-    `;
-    tweetsDiv.appendChild(tweetDiv);
-  });
+  const likeBtn = tweetDiv.querySelector(".like-btn");
+  likeBtn.addEventListener("click", () => handleLike(tweet.id));
 
-  // Add event listeners for like buttons
-  document.querySelectorAll(".like-btn").forEach((button) => {
-    button.addEventListener("click", handleLike);
-  });
+  const commentBtn = tweetDiv.querySelector(".comment-btn");
+  commentBtn.addEventListener("click", () => showCommentForm(tweet.id));
 
-  // Add event listeners for follow buttons
-  document.querySelectorAll(".follow-btn").forEach((button) => {
-    button.addEventListener("click", toggleFollow);
+  return tweetDiv;
+}
+
+function renderTweets(tweets) {
+  const tweetsDiv = document.getElementById("tweets");
+  tweetsDiv.innerHTML = "";
+  tweets.forEach((tweet) => {
+    tweetsDiv.appendChild(renderTweet(tweet));
   });
 }
 
-// Handle likes
-function handleLike(event) {
-  const index = event.target.closest(".like-btn").dataset.index;
-  sampleTweets[index].likes += 1;
-  renderTweets();
-}
+document
+  .getElementById("tweetForm")
+  .addEventListener("submit", async function (e) {
+    e.preventDefault();
+    const tweetContent = document.getElementById("tweetContent").value.trim();
+    if (tweetContent) {
+      try {
+        const response = await fetch(`${BASE_URL}/create_tweet`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({ content: tweetContent }),
+        });
+        if (!response.ok) throw new Error("Failed to create tweet");
+        document.getElementById("tweetContent").value = "";
+        loadTweets();
+        alert("Tweet created successfully!");
+      } catch (error) {
+        console.error("Error creating tweet:", error);
+        alert("Failed to create tweet. Please try again.");
+      }
+    } else {
+      alert("Tweet content cannot be empty");
+    }
+  });
 
-// Toggle follow/unfollow
-function toggleFollow(event) {
-  const user = event.target.dataset.user;
-  if (followedUsers.has(user)) {
-    followedUsers.delete(user);
-    event.target.textContent = "Follow";
-    event.target.classList.remove("following");
-  } else {
-    followedUsers.add(user);
-    event.target.textContent = "Following";
-    event.target.classList.add("following");
-  }
-}
-
-// Format tags for display
-function formatTags(tags) {
-  return tags.map((tag) => `<span class="tag">${tag}</span>`).join(", ");
-}
-
-// Handle new tweet submission
-document.getElementById("tweetForm").addEventListener("submit", function (e) {
-  e.preventDefault();
-
-  const tweetContent = document.getElementById("tweetContent").value.trim();
-  const tweetTags = document.getElementById("tweetTags").value.trim();
-
-  if (tweetContent) {
-    const tagsArray = tweetTags
-      .split(",")
-      .map((tag) => tag.trim())
-      .filter((tag) => tag);
-
-    sampleTweets.unshift({
-      user,
-      content: tweetContent,
-      tags: tagsArray,
-      likes: 0,
-      comments: [],
+async function handleLike(tweetId) {
+  try {
+    const response = await fetch(`${BASE_URL}/like_tweet`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify({ tweet_id: tweetId }),
     });
-
-    renderTweets();
-
-    // Clear input fields
-    document.getElementById("tweetContent").value = "";
-    document.getElementById("tweetTags").value = "";
-  } else {
-    alert("Tweet content cannot be empty");
+    if (!response.ok) throw new Error("Failed to like tweet");
+    alert("Tweet liked successfully!");
+    loadTweets();
+  } catch (error) {
+    console.error("Error liking tweet:", error);
+    alert("Failed to like tweet. Please try again.");
   }
-});
+}
 
-// Render initial sample tweets
-renderTweets();
+function showCommentForm(tweetId) {
+  const commentForm = document.createElement("form");
+  commentForm.innerHTML = `
+    <input type="text" placeholder="Add a comment" required>
+    <button type="submit">Submit</button>
+  `;
+  commentForm.addEventListener("submit", (e) => {
+    e.preventDefault();
+    const content = e.target.querySelector("input").value;
+    handleComment(tweetId, content);
+  });
+  const commentsDiv = document.getElementById(`comments-${tweetId}`);
+  commentsDiv.appendChild(commentForm);
+}
+
+async function handleComment(tweetId, content) {
+  try {
+    const response = await fetch(`${BASE_URL}/comment_tweet`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify({ tweet_id: tweetId, content: content }),
+    });
+    if (!response.ok) throw new Error("Failed to add comment");
+    alert("Comment added successfully!");
+    loadTweets();
+  } catch (error) {
+    console.error("Error adding comment:", error);
+    alert("Failed to add comment. Please try again.");
+  }
+}
+
+async function loadTweets() {
+  try {
+    const response = await fetch(`${BASE_URL}/load_tweets`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+    });
+    if (!response.ok) throw new Error("Failed to load tweets");
+    const data = await response.json();
+    if (data.reports && data.reports.length > 0) {
+      const tweets = data.reports.map((report) => ({
+        id: report.id,
+        ...report.context,
+      }));
+      renderTweets(tweets);
+    } else {
+      document.getElementById("tweets").innerHTML = "<p>No tweets found.</p>";
+    }
+  } catch (error) {
+    console.error("Error loading tweets:", error);
+    alert("Failed to load tweets. Please try again.");
+  }
+}
+
+loadTweets();
