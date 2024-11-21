@@ -47,8 +47,6 @@ document.getElementById("register-btn").addEventListener("click", async () => {
   }
 });
 
-// Login User and Start Walker
-// Login User and Start Walker
 document.getElementById("login-btn").addEventListener("click", async () => {
   const email = document.getElementById("login-email").value;
   const password = document.getElementById("login-password").value;

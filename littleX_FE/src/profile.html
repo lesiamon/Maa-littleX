@@ -3,9 +3,9 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>littleX Tweets</title>
+    <title>LittleX Profile</title>
     <link rel="stylesheet" href="common.css" />
-    <link rel="stylesheet" href="tweets.css" />
+    <link rel="stylesheet" href="profile.css" />
     <link
       href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css"
       rel="stylesheet"
@@ -30,30 +30,10 @@
     </header>
 
     <div class="main-content">
-      <div class="content-left">
+      <div class="profile-container">
         <div class="tweets-container">
-          <form id="tweetForm">
-            <textarea
-              id="tweetContent"
-              placeholder="What's on your mind?"
-              rows="3"
-              required
-            ></textarea>
-            <button type="submit">Post</button>
-          </form>
-          <div id="tweets">
-            <!-- Tweets will be dynamically loaded here -->
-          </div>
-        </div>
-      </div>
-
-      <div class="content-right">
-        <div class="follow-container">
-          <div class="follow-header">
-            <h3>Who to Follow</h3>
-          </div>
-          <div id="followList">
-            <!-- Profiles will be dynamically loaded here -->
+          <div id="userTweets">
+            <!-- User's tweets will be loaded here -->
           </div>
         </div>
       </div>
@@ -94,17 +74,6 @@
           <div class="username"></div>
         </div>
         <div class="content"></div>
-      </div>
-    </template>
-
-    <!-- Profile template -->
-    <template id="profile-template">
-      <div class="profile-item">
-        <div class="profile-info">
-          <i class="fas fa-user-circle profile-avatar"></i>
-          <span class="profile-name"></span>
-        </div>
-        <button class="follow-btn">Follow</button>
       </div>
     </template>
 

@@ -1,4 +1,5 @@
 import:py logging;
+import:py datetime;
 import:py from jac_cloud.core.architype { NodeAnchor }
 
 glob logger = logging.getLogger("littelX");
@@ -11,6 +12,7 @@ node profile {
 
 node tweet {
     has content: str;
+    has created_at: str = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S");
 }
 
 node comment {
@@ -28,6 +30,23 @@ walker visit_profile {
             new_profile = here ++> profile();
             visit new_profile;
         }
+    }
+}
+
+walker load_user_profiles {
+    obj __specs__ {
+        static has auth: bool = False;
+    }
+    can load_profiles with `root entry {
+        self.profiles: list = [];
+        
+        for user in NodeAnchor.Collection.find({"name": "profile"}) {
+            user_node = user.architype;
+            self.profiles.append(
+                {"name": user_node.username, "id": jid(user_node)}
+            );
+        }
+        report self.profiles;
     }
 }
 
@@ -59,6 +78,33 @@ walker follow_request :visit_profile: {
     }
 }
 
+walker load_likes {
+    has likes: list = [];
+
+    can load_likes with tweet entry {
+        visit [<-:like:-];
+    }
+
+    can load_profile with profile entry {
+        self.likes.append({"username": here.username});
+    }
+
+}
+
+walker load_tweet {
+    has tweet_info: dict = {};
+
+    can load_likes with tweet entry {
+        self.tweet_info["content"] = here;
+        visit [<--(`?profile)];
+    }
+
+    can load_profile with profile entry {
+        self.tweet_info["username"] = here.username;
+    }
+
+}
+
 walker load_comments {
     has comments: list = [];
 
@@ -67,21 +113,9 @@ walker load_comments {
     }
 
     can report_comments with comment entry {
+        Jac.unrestrict(here, level="READ");
         self.comments.append(here);
     }
-}
-
-walker load_likes {
-    has likes: list = [];
-
-    can load_likes with tweet entry {
-        visit [<-:like:-];
-    }
-
-    can load_lprofile with profile entry {
-        self.likes.append({"username": here.username});
-    }
-
 }
 
 walker load_tweets :visit_profile: {
@@ -92,27 +126,29 @@ walker load_tweets :visit_profile: {
     }
 
     can load_tweets with tweet entry {
-        logger.info(f"tweet loaded: {here}");
+        Jac.unrestrict(here, level="READ");
         comments = here spawn load_comments();
         likes = here spawn load_likes();
-        self.tweet_info = {"comments": comments.comments, "likes": likes, "tweet": here};
+        tweet_content = here spawn load_tweet();
+        self.tweet_info = {
+            "comments": comments.comments,
+            "likes": likes.likes,
+            "tweet": tweet_content.tweet_info
+        };
         report self.tweet_info;
     }
 }
 
 walker load_feed :visit_profile: {
     can load with profile entry {
-        self.feed: list = [];
-        
+        here spawn load_tweets();
         for user in here.followees {
             user_node = &user;
-            Jac.allow_root(user_node, NodeAnchor.ref(user), "READ");
+            Jac.unrestrict(user_node, level="READ");
             logger.info("Acess has given");
             user_node spawn load_tweets();
-            Jac.disallow_root(here, NodeAnchor.ref(user));
             logger.info("Removing acess");
         }
-        logger.info(f"all feeds: {self.feed}");
     }
 }
 

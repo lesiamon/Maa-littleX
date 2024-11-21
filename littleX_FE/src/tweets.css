@@ -1,247 +1,149 @@
-body {
-  margin: 0;
-  padding-top: 60px;
-  font-family: Arial, sans-serif;
-}
-
-.top-nav {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  background-color: #1da1f2;
-  color: white;
-  height: 60px;
-  z-index: 1000;
-}
-
-.nav-content {
+/* Tweets page specific styles */
+.main-content {
+  display: grid;
+  grid-template-columns: 1fr 300px;
+  gap: 20px;
   max-width: 1200px;
   margin: 0 auto;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  height: 100%;
-  padding: 0 20px;
-}
-
-.top-nav h1 {
-  margin: 0;
-  font-size: 1.5em;
-}
-
-#logoutButton {
-  background-color: transparent;
-  border: 2px solid white;
-  color: white;
-  padding: 5px 15px;
-  border-radius: 20px;
-  cursor: pointer;
-  transition: background-color 0.3s, color 0.3s;
-}
-
-#logoutButton:hover {
-  background-color: white;
-  color: #1da1f2;
-}
-
-.main-content {
-  max-width: 800px;
-  margin: 0 auto;
   padding: 20px;
 }
 
-.tweets-container {
-  max-width: 800px;
-  margin: 0 auto;
-  background: #fff;
-  border-radius: 8px;
-  padding: 20px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+.content-left {
+  min-width: 0;
 }
 
-.tweet {
-  border-bottom: 1px solid #eee;
-  padding: 15px 0;
+.content-right {
+  min-width: 0;
 }
 
-.username {
-  color: #1da1f2;
-  font-weight: bold;
-  margin-bottom: 5px;
-}
-
-.content {
-  margin: 10px 0;
-}
-
-.like-btn,
-.comment-btn {
-  padding: 5px 15px;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-  margin-right: 10px;
-}
-
-.like-btn {
-  background-color: #ff6b6b;
-  color: white;
-}
-
-.comment-btn {
-  background-color: #70a1ff;
-  color: white;
-}
-
-.comments-section {
-  margin-left: 20px;
-  padding: 10px 0;
-}
-
-.comment {
-  background: #f8f9fa;
-  padding: 10px;
-  margin: 5px 0;
-  border-radius: 4px;
-}
-
-.comment-form {
-  margin-top: 10px;
-  display: flex;
-  gap: 10px;
-}
-
-.comment-form input {
-  flex: 1;
-  padding: 8px;
-  border: 1px solid #ddd;
-  border-radius: 4px;
-}
-
-.comment-form button {
-  padding: 8px 15px;
-  background-color: #70a1ff;
-  color: white;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-}
-
+/* Tweet form styles */
 #tweetForm {
   margin-bottom: 20px;
 }
 
 #tweetForm textarea {
   width: 100%;
-  padding: 10px;
-  border: 1px solid #ddd;
-  border-radius: 4px;
+  padding: 12px;
+  border: 1px solid #e1e8ed;
+  border-radius: 8px;
   margin-bottom: 10px;
   resize: vertical;
+  font-size: 0.95rem;
 }
 
 #tweetForm button {
-  padding: 8px 15px;
+  padding: 8px 16px;
   background-color: #1da1f2;
   color: white;
   border: none;
-  border-radius: 4px;
-  cursor: pointer;
-}
-
-.tweet-actions {
-  display: flex;
-  gap: 15px;
-  margin: 10px 0;
-}
-
-.like-btn,
-.comment-btn {
-  display: flex;
-  align-items: center;
-  gap: 5px;
-  padding: 8px 12px;
-  border: none;
   border-radius: 20px;
   cursor: pointer;
+  font-weight: 500;
+  transition: background-color 0.2s;
+}
+
+#tweetForm button:hover {
+  background-color: #1a91da;
+}
+
+/* Follow section styles */
+.follow-container {
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  position: sticky;
+  top: 80px;
+  height: fit-content;
+}
+
+.follow-header {
+  padding: 16px;
+  border-bottom: 1px solid #eee;
+}
+
+.follow-header h3 {
+  margin: 0;
+  font-size: 1.2rem;
+  font-weight: bold;
+  color: #000;
+}
+
+#followList {
+  padding: 0 16px;
+}
+
+.profile-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 0;
+  border-bottom: 1px solid #eee;
+}
+
+.profile-item:last-child {
+  border-bottom: none;
+}
+
+.profile-name {
+  font-weight: 500;
+  color: #000;
+}
+
+.follow-btn {
+  background: #1da1f2;
+  color: white;
+  border: none;
+  border-radius: 20px;
+  padding: 6px 16px;
+  font-size: 0.9rem;
+  font-weight: 500;
+  cursor: pointer;
   transition: all 0.2s;
-  background: transparent;
+  min-width: 80px;
+  text-align: center;
 }
 
-.like-btn:hover {
-  color: #ff4757;
+.follow-btn:hover {
+  background-color: #1a91da;
 }
 
-.comment-btn:hover {
+.follow-btn.following {
+  background-color: transparent;
   color: #1da1f2;
+  border: 1px solid #1da1f2;
 }
 
-.like-btn i {
-  color: #ff4757;
+/* Responsive */
+@media screen and (max-width: 1024px) {
+  .main-content {
+    grid-template-columns: 1fr;
+    max-width: 800px;
+  }
+
+  .follow-container {
+    position: static;
+    margin-top: 20px;
+  }
 }
 
-.comment-btn i {
-  color: #1da1f2;
-}
-
-.count {
-  font-size: 14px;
-  color: #666;
-}
-/* Responsive Design Adjustments */
 @media screen and (max-width: 768px) {
-  .tweets-container {
+  .main-content {
     padding: 10px;
   }
 
-  header h1 {
-    font-size: 1.2rem;
-  }
-
-  header button {
-    padding: 6px 10px;
-    font-size: 0.8rem;
-  }
-
-  .tweet {
-    padding: 10px;
-  }
-
-  #tweetForm textarea,
-  #tweetForm input {
-    padding: 8px;
-    font-size: 0.9rem;
-  }
-
-  #tweetForm button {
-    padding: 8px;
-    font-size: 0.9rem;
+  .tweets-container,
+  .follow-container {
+    padding: 15px;
   }
 }
 
 @media screen and (max-width: 480px) {
-  header h1 {
-    font-size: 1rem;
-  }
-
-  header button {
-    font-size: 0.7rem;
-    padding: 5px 8px;
-  }
-
-  .tweet .user {
-    font-size: 0.9rem;
-  }
-
-  #tweetForm textarea,
-  #tweetForm input {
-    font-size: 0.8rem;
+  .main-content {
     padding: 5px;
   }
 
-  #tweetForm button {
-    font-size: 0.8rem;
-    padding: 5px;
+  .tweets-container,
+  .follow-container {
+    padding: 10px;
   }
 }
