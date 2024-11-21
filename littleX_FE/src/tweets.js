@@ -13,7 +13,6 @@ document.getElementById("logoutButton").addEventListener("click", () => {
   window.location.href = "index.html";
 });
 
-// Profile and Follow Functions
 async function loadCurrentUserProfile() {
   try {
     const response = await fetch(`${BASE_URL}/get_profile`, {
@@ -28,15 +27,19 @@ async function loadCurrentUserProfile() {
     const data = await response.json();
     if (data.reports && data.reports.length > 0) {
       currentUserProfile = data.reports[0];
-      // Update username in navigation
       const usernameElement = document.getElementById("username");
       if (usernameElement) {
-        usernameElement.textContent = currentUserProfile.context.username;
+        usernameElement.textContent =
+          currentUserProfile.context.username || "Anonymous";
       }
       return currentUserProfile;
     }
   } catch (error) {
-    console.error("Error:", error);
+    console.error("Error loading profile:", error);
+    const usernameElement = document.getElementById("username");
+    if (usernameElement) {
+      usernameElement.textContent = "Anonymous";
+    }
   }
 }
 
@@ -299,13 +302,17 @@ async function loadUserTweets() {
 
 // Page Initialization
 async function initializePage() {
-  await loadCurrentUserProfile();
+  try {
+    await loadCurrentUserProfile();
 
-  if (isProfilePage) {
-    loadUserTweets();
-  } else {
-    loadTweets();
-    loadProfilesToFollow();
+    if (isProfilePage) {
+      await loadUserTweets();
+    } else {
+      await loadTweets();
+      await loadProfilesToFollow();
+    }
+  } catch (error) {
+    console.error("Page initialization error:", error);
   }
 }
 

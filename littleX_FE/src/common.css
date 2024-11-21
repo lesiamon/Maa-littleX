@@ -1,0 +1,263 @@
+/* Common styles shared between pages */
+body {
+  margin: 0;
+  padding-top: 60px;
+  font-family: Arial, sans-serif;
+  background-color: #f7f9fa;
+}
+
+/* Navigation styles */
+.top-nav {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  background-color: #1da1f2;
+  color: white;
+  height: 60px;
+  z-index: 1000;
+}
+
+.nav-content {
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+  height: 100%;
+  padding: 0 20px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.logo-link {
+  text-decoration: none;
+  margin-right: auto;
+}
+
+.logo-link h1 {
+  margin: 0;
+  font-size: 1.5rem;
+  font-weight: bold;
+  color: white;
+}
+
+.nav-actions {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.profile-user {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.profile-avatar {
+  font-size: 24px;
+  color: white;
+}
+
+#username {
+  margin: 0;
+  font-size: 0.95rem;
+  font-weight: 500;
+  color: white;
+}
+
+.profile-link {
+  text-decoration: none;
+  padding: 6px 12px;
+  border-radius: 20px;
+  transition: background-color 0.2s;
+}
+
+.profile-link:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+#logoutButton {
+  background-color: white;
+  color: #1da1f2;
+  border: none;
+  padding: 6px 16px;
+  border-radius: 20px;
+  cursor: pointer;
+  font-size: 0.95rem;
+  font-weight: 500;
+  transition: all 0.2s;
+}
+
+#logoutButton:hover {
+  background-color: #f8f9fa;
+}
+
+/* Common tweet styles */
+.tweets-container {
+  background: white;
+  border-radius: 8px;
+  padding: 20px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.tweet {
+  border-bottom: 1px solid #e1e8ed;
+  padding: 15px 0;
+}
+
+.tweet:last-child {
+  border-bottom: none;
+}
+
+.tweet-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.tweet-avatar {
+  font-size: 1.2rem;
+  color: #666;
+}
+
+.username {
+  color: #000;
+  font-weight: 500;
+}
+
+.content {
+  margin: 10px 0;
+  line-height: 1.4;
+  color: #14171a;
+}
+
+/* Common action styles */
+.tweet-actions {
+  display: flex;
+  gap: 15px;
+  margin: 10px 0;
+}
+
+.like-btn,
+.comment-btn {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 8px 12px;
+  border: none;
+  border-radius: 20px;
+  cursor: pointer;
+  transition: all 0.2s;
+  background: transparent;
+}
+
+.like-btn:hover {
+  background-color: #ffebee;
+  color: #ff4757;
+}
+
+.comment-btn:hover {
+  background-color: #e8f5fe;
+  color: #1da1f2;
+}
+
+.like-btn i {
+  color: #ff4757;
+}
+
+.comment-btn i {
+  color: #1da1f2;
+}
+
+.count {
+  font-size: 14px;
+  color: #666;
+}
+
+/* Common comment styles */
+.comments-section {
+  margin-left: 20px;
+  padding: 10px 0;
+}
+
+.comment {
+  background: #f8f9fa;
+  padding: 12px;
+  margin: 5px 0;
+  border-radius: 8px;
+}
+
+.comment-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.comment-avatar {
+  font-size: 1rem;
+  color: #666;
+}
+
+.comment-form {
+  margin-top: 10px;
+  display: flex;
+  gap: 10px;
+}
+
+.comment-form input {
+  flex: 1;
+  padding: 8px 12px;
+  border: 1px solid #e1e8ed;
+  border-radius: 20px;
+  font-size: 0.9rem;
+}
+
+.comment-form button {
+  padding: 8px 16px;
+  background-color: #1da1f2;
+  color: white;
+  border: none;
+  border-radius: 20px;
+  cursor: pointer;
+  font-weight: 500;
+  transition: background-color 0.2s;
+}
+
+.comment-form button:hover {
+  background-color: #1a91da;
+}
+
+/* Common responsive styles */
+@media screen and (max-width: 768px) {
+  .nav-content {
+    padding: 0 15px;
+  }
+
+  .profile-avatar {
+    font-size: 20px;
+  }
+
+  #logoutButton {
+    padding: 4px 12px;
+    font-size: 0.9rem;
+  }
+}
+
+@media screen and (max-width: 480px) {
+  .nav-content {
+    padding: 0 10px;
+  }
+
+  #username {
+    display: none;
+  }
+
+  .profile-avatar {
+    font-size: 18px;
+  }
+
+  #logoutButton {
+    padding: 4px 10px;
+    font-size: 0.85rem;
+  }
+}
