@@ -61,7 +61,6 @@ async function loadProfilesToFollow() {
       followListElement.innerHTML = "";
 
       profiles.forEach((profile) => {
-        // Don't show current user's profile
         if (
           currentUserProfile &&
           profile.name === currentUserProfile.context.username
@@ -75,7 +74,6 @@ async function loadProfilesToFollow() {
           profile.name;
         const followBtn = profileElement.querySelector(".follow-btn");
 
-        // Check if already following
         const isFollowing = currentUserProfile?.context.followees?.includes(
           profile.id
         );
@@ -87,7 +85,6 @@ async function loadProfilesToFollow() {
         followBtn.addEventListener("click", () =>
           handleFollow(profile.id, followBtn)
         );
-
         followListElement.appendChild(profileElement);
       });
     }
@@ -109,7 +106,6 @@ async function handleFollow(profileId, button) {
 
     if (!response.ok) throw new Error("Failed to follow user");
 
-    // Toggle button state
     if (button.classList.contains("following")) {
       button.textContent = "Follow";
       button.classList.remove("following");
@@ -118,14 +114,12 @@ async function handleFollow(profileId, button) {
       button.classList.add("following");
     }
 
-    // Refresh current user's profile
     await loadCurrentUserProfile();
   } catch (error) {
     console.error("Error:", error);
   }
 }
 
-// Tweet Functions
 function renderComment(comment) {
   const template = document.getElementById("comment-template");
   const commentElement = template.content.cloneNode(true);
@@ -141,7 +135,10 @@ function renderTweet(tweetData) {
   const tweet = tweetData.tweet;
   const comments = tweetData.comments;
   const likes = tweetData.likes;
-  const likeCount = likes ? likes.length : 0;
+  const likeCount = likes ? likes.length : null;
+  const isLiked = likes
+    ? likes.includes(currentUserProfile?.context?.id)
+    : false;
 
   const template = document.getElementById("tweet-template");
   const tweetElement = template.content.cloneNode(true);
@@ -155,11 +152,27 @@ function renderTweet(tweetData) {
 
   tweetElement.querySelector(".content").textContent =
     tweet.content.context.content;
-  tweetElement.querySelector(".like-btn .count").textContent = likeCount;
-  tweetElement.querySelector(".comment-btn .count").textContent =
-    comments.length;
 
+  const likeBtn = tweetElement.querySelector(".like-btn");
+  const likeIcon = likeBtn.querySelector(".material-icons");
+  const countSpan = likeBtn.querySelector(".count");
+
+  // Only show count if there are likes
+  if (likeCount) {
+    countSpan.textContent = likeCount;
+    likeIcon.textContent = "favorite";
+    likeIcon.style.color = "red";
+  } else {
+    countSpan.textContent = "";
+    likeIcon.textContent = "favorite_border";
+    likeIcon.style.color = "";
+  }
+
+  // Rest of the render tweet function remains the same...
+  const commentBtn = tweetElement.querySelector(".comment-btn");
   const commentsSection = tweetElement.querySelector(".comments-section");
+  commentBtn.querySelector(".count").textContent = comments.length;
+
   comments.forEach((comment) => {
     commentsSection.insertBefore(
       renderComment(comment),
@@ -167,14 +180,27 @@ function renderTweet(tweetData) {
     );
   });
 
-  const commentBtn = tweetElement.querySelector(".comment-btn");
   commentBtn.addEventListener("click", () => {
     commentsSection.style.display =
       commentsSection.style.display === "none" ? "block" : "none";
   });
 
-  const likeBtn = tweetElement.querySelector(".like-btn");
-  likeBtn.addEventListener("click", () => handleLike(tweet.content.id));
+  likeBtn.addEventListener("click", async () => {
+    const icon = likeBtn.querySelector(".material-icons");
+    const currentCount = parseInt(countSpan.textContent) || 0;
+
+    if (icon.textContent === "favorite") {
+      icon.textContent = "favorite_border";
+      icon.style.color = "";
+      countSpan.textContent = currentCount > 1 ? currentCount - 1 : "";
+    } else {
+      icon.textContent = "favorite";
+      icon.style.color = "red";
+      countSpan.textContent = currentCount + 1;
+    }
+
+    await handleLike(tweet.content.id);
+  });
 
   const commentForm = tweetElement.querySelector(".comment-form");
   commentForm.addEventListener("submit", (e) => {
@@ -186,7 +212,6 @@ function renderTweet(tweetData) {
 
   return tweetElement;
 }
-
 function renderTweets(tweetsData) {
   const tweetsDiv = document.getElementById(
     isProfilePage ? "userTweets" : "tweets"
@@ -197,7 +222,6 @@ function renderTweets(tweetsData) {
   });
 }
 
-// Tweet Form Handler
 if (!isProfilePage) {
   document
     .getElementById("tweetForm")
@@ -224,7 +248,6 @@ if (!isProfilePage) {
     });
 }
 
-// Tweet Actions
 async function handleLike(tweetId) {
   try {
     const response = await fetch(`${BASE_URL}/like_tweet`, {
@@ -236,9 +259,10 @@ async function handleLike(tweetId) {
       body: JSON.stringify({ tweet_id: tweetId }),
     });
     if (!response.ok) throw new Error("Failed to like tweet");
-    isProfilePage ? loadUserTweets() : loadTweets();
   } catch (error) {
     console.error("Error:", error);
+    // Reload tweets to revert UI if error occurs
+    isProfilePage ? loadUserTweets() : loadTweets();
   }
 }
 
@@ -259,7 +283,6 @@ async function handleComment(tweetId, content) {
   }
 }
 
-// Loading Functions
 async function loadTweets() {
   try {
     const response = await fetch(`${BASE_URL}/load_feed`, {
@@ -300,11 +323,9 @@ async function loadUserTweets() {
   }
 }
 
-// Page Initialization
 async function initializePage() {
   try {
     await loadCurrentUserProfile();
-
     if (isProfilePage) {
       await loadUserTweets();
     } else {
@@ -316,5 +337,4 @@ async function initializePage() {
   }
 }
 
-// Start the initialization
 initializePage();

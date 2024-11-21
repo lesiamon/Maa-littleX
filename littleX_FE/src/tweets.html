@@ -3,108 +3,118 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>littleX Tweets</title>
-    <link rel="stylesheet" href="common.css" />
-    <link rel="stylesheet" href="tweets.css" />
+    <title>littleX - Tweets</title>
     <link
-      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css"
+      href="https://cdnjs.cloudflare.com/ajax/libs/normalize/8.0.1/normalize.min.css"
       rel="stylesheet"
     />
+    <link
+      href="https://fonts.googleapis.com/icon?family=Material+Icons"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="material.css" />
   </head>
   <body>
-    <header class="top-nav">
-      <div class="nav-content">
-        <a href="tweets.html" class="logo-link">
-          <h1>LittleX</h1>
+    <header class="md-app-bar">
+      <div class="md-app-bar-content">
+        <a href="tweets.html" class="md-app-bar-title">
+          <h1>littleX</h1>
         </a>
-        <div class="nav-actions">
-          <a href="profile.html" class="profile-link">
-            <div class="profile-user">
-              <i class="fas fa-user-circle profile-avatar"></i>
-              <h2 id="username">Loading...</h2>
-            </div>
+        <div class="md-app-bar-actions">
+          <a href="profile.html" class="md-button md-button-text">
+            <span class="material-icons">account_circle</span>
+            <span id="username">Loading...</span>
           </a>
-          <button id="logoutButton">Logout</button>
+          <button id="logoutButton" class="md-button md-button-outlined">
+            Logout
+          </button>
         </div>
       </div>
     </header>
 
-    <div class="main-content">
-      <div class="content-left">
-        <div class="tweets-container">
-          <form id="tweetForm">
-            <textarea
-              id="tweetContent"
-              placeholder="What's on your mind?"
-              rows="3"
-              required
-            ></textarea>
-            <button type="submit">Post</button>
-          </form>
-          <div id="tweets">
-            <!-- Tweets will be dynamically loaded here -->
+    <main class="md-content">
+      <div class="md-grid">
+        <div class="md-content-main">
+          <div class="md-card">
+            <form id="tweetForm" class="md-card-content">
+              <div class="md-text-field">
+                <textarea
+                  id="tweetContent"
+                  class="md-text-field-input"
+                  placeholder="What's on your mind?"
+                  rows="3"
+                  required
+                ></textarea>
+              </div>
+              <button type="submit" class="md-button md-button-contained">
+                Post
+              </button>
+            </form>
+          </div>
+          <div id="tweets" class="md-tweets-container"></div>
+        </div>
+
+        <div class="md-content-side">
+          <div class="md-card">
+            <div class="md-card-header">
+              <h2 class="md-title">Who to Follow</h2>
+            </div>
+            <div id="followList" class="md-card-content"></div>
           </div>
         </div>
       </div>
+    </main>
 
-      <div class="content-right">
-        <div class="follow-container">
-          <div class="follow-header">
-            <h3>Who to Follow</h3>
-          </div>
-          <div id="followList">
-            <!-- Profiles will be dynamically loaded here -->
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Tweet template -->
     <template id="tweet-template">
-      <div class="tweet">
-        <div class="tweet-header">
-          <i class="fas fa-user-circle tweet-avatar"></i>
-          <div class="username"></div>
+      <div class="md-card md-tweet">
+        <div class="md-card-header">
+          <span class="material-icons">account_circle</span>
+          <span class="username"></span>
         </div>
-        <div class="content"></div>
-        <div class="tweet-actions">
-          <button class="like-btn">
-            <i class="fas fa-heart"></i>
+        <div class="md-card-content content"></div>
+        <div class="md-card-actions">
+          <button class="md-button md-button-icon like-btn">
+            <span class="material-icons">favorite_border</span>
             <span class="count"></span>
           </button>
-          <button class="comment-btn">
-            <i class="fas fa-comment"></i>
+          <button class="md-button md-button-icon comment-btn">
+            <span class="material-icons">chat_bubble_outline</span>
             <span class="count"></span>
           </button>
         </div>
         <div class="comments-section" style="display: none">
-          <form class="comment-form">
-            <input type="text" placeholder="Post your reply" required />
-            <button type="submit">Reply</button>
+          <form class="comment-form md-text-field">
+            <input
+              type="text"
+              class="md-text-field-input"
+              placeholder="Post your reply"
+              required
+            />
+            <button type="submit" class="md-button md-button-contained">
+              Reply
+            </button>
           </form>
         </div>
       </div>
     </template>
 
-    <!-- Comment template -->
     <template id="comment-template">
-      <div class="comment">
+      <div class="md-card-content comment">
         <div class="comment-header">
-          <i class="fas fa-user-circle comment-avatar"></i>
-          <div class="username"></div>
+          <span class="material-icons">account_circle</span>
+          <span class="username"></span>
         </div>
         <div class="content"></div>
       </div>
     </template>
 
-    <!-- Profile template -->
     <template id="profile-template">
-      <div class="profile-item">
-        <div class="profile-info">
-          <i class="fas fa-user-circle profile-avatar"></i>
+      <div class="md-list-item">
+        <div class="md-list-item-text">
+          <span class="material-icons">account_circle</span>
           <span class="profile-name"></span>
         </div>
-        <button class="follow-btn">Follow</button>
+        <button class="md-button md-button-outlined follow-btn">Follow</button>
       </div>
     </template>
 
