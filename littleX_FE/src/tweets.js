@@ -3,41 +3,74 @@ if (!token) {
   window.location.href = "index.html";
 }
 
+const BASE_URL = "http://0.0.0.0:8000/walker";
+
 document.getElementById("logoutButton").addEventListener("click", () => {
   localStorage.removeItem("authToken");
   window.location.href = "index.html";
 });
 
-const BASE_URL = "http://0.0.0.0:8000/walker";
+function renderComment(comment) {
+  const template = document.getElementById("comment-template");
+  const commentElement = template.content.cloneNode(true);
 
-function renderTweet(tweet) {
-  const tweetDiv = document.createElement("div");
-  tweetDiv.className = "tweet";
-  tweetDiv.innerHTML = `
-    <p class="content">${tweet.content}</p>
-    <div class="tweet-actions">
-      <button class="like-btn" data-id="${tweet.id}">
-        <i class="fas fa-heart"></i> Like
-      </button>
-      <button class="comment-btn" data-id="${tweet.id}">Comment</button>
-    </div>
-    <div class="comments" id="comments-${tweet.id}"></div>
-  `;
+  commentElement.querySelector(".username").textContent =
+    comment.context.username || "Anonymous";
+  commentElement.querySelector(".content").textContent =
+    comment.context.content;
 
-  const likeBtn = tweetDiv.querySelector(".like-btn");
-  likeBtn.addEventListener("click", () => handleLike(tweet.id));
-
-  const commentBtn = tweetDiv.querySelector(".comment-btn");
-  commentBtn.addEventListener("click", () => showCommentForm(tweet.id));
-
-  return tweetDiv;
+  return commentElement;
 }
 
-function renderTweets(tweets) {
+function renderTweet(tweetData) {
+  const tweet = tweetData.tweet;
+  const comments = tweetData.comments;
+  const likes = tweetData.likes.context.likes;
+  const likeCount = likes ? likes.length : 0;
+
+  const template = document.getElementById("tweet-template");
+  const tweetElement = template.content.cloneNode(true);
+
+  tweetElement.querySelector(".username").textContent =
+    tweet.context.username || "Anonymous";
+  tweetElement.querySelector(".content").textContent = tweet.context.content;
+  tweetElement.querySelector(".like-btn .count").textContent = likeCount;
+  tweetElement.querySelector(".comment-btn .count").textContent =
+    comments.length;
+
+  const commentsSection = tweetElement.querySelector(".comments-section");
+  comments.forEach((comment) => {
+    commentsSection.insertBefore(
+      renderComment(comment),
+      commentsSection.lastElementChild
+    );
+  });
+
+  const commentBtn = tweetElement.querySelector(".comment-btn");
+  commentBtn.addEventListener("click", () => {
+    commentsSection.style.display =
+      commentsSection.style.display === "none" ? "block" : "none";
+  });
+
+  const likeBtn = tweetElement.querySelector(".like-btn");
+  likeBtn.addEventListener("click", () => handleLike(tweet.id));
+
+  const commentForm = tweetElement.querySelector(".comment-form");
+  commentForm.addEventListener("submit", (e) => {
+    e.preventDefault();
+    const content = e.target.querySelector("input").value;
+    handleComment(tweet.id, content);
+    e.target.reset();
+  });
+
+  return tweetElement;
+}
+
+function renderTweets(tweetsData) {
   const tweetsDiv = document.getElementById("tweets");
   tweetsDiv.innerHTML = "";
-  tweets.forEach((tweet) => {
-    tweetsDiv.appendChild(renderTweet(tweet));
+  tweetsData.forEach((tweetData) => {
+    tweetsDiv.appendChild(renderTweet(tweetData));
   });
 }
 
@@ -45,27 +78,23 @@ document
   .getElementById("tweetForm")
   .addEventListener("submit", async function (e) {
     e.preventDefault();
-    const tweetContent = document.getElementById("tweetContent").value.trim();
-    if (tweetContent) {
-      try {
-        const response = await fetch(`${BASE_URL}/create_tweet`, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-          body: JSON.stringify({ content: tweetContent }),
-        });
-        if (!response.ok) throw new Error("Failed to create tweet");
-        document.getElementById("tweetContent").value = "";
-        loadTweets();
-        alert("Tweet created successfully!");
-      } catch (error) {
-        console.error("Error creating tweet:", error);
-        alert("Failed to create tweet. Please try again.");
-      }
-    } else {
-      alert("Tweet content cannot be empty");
+    const content = document.getElementById("tweetContent").value.trim();
+    if (!content) return;
+
+    try {
+      const response = await fetch(`${BASE_URL}/create_tweet`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ content }),
+      });
+      if (!response.ok) throw new Error("Failed to create tweet");
+      document.getElementById("tweetContent").value = "";
+      loadTweets();
+    } catch (error) {
+      console.error("Error:", error);
     }
   });
 
@@ -80,27 +109,10 @@ async function handleLike(tweetId) {
       body: JSON.stringify({ tweet_id: tweetId }),
     });
     if (!response.ok) throw new Error("Failed to like tweet");
-    alert("Tweet liked successfully!");
     loadTweets();
   } catch (error) {
-    console.error("Error liking tweet:", error);
-    alert("Failed to like tweet. Please try again.");
+    console.error("Error:", error);
   }
-}
-
-function showCommentForm(tweetId) {
-  const commentForm = document.createElement("form");
-  commentForm.innerHTML = `
-    <input type="text" placeholder="Add a comment" required>
-    <button type="submit">Submit</button>
-  `;
-  commentForm.addEventListener("submit", (e) => {
-    e.preventDefault();
-    const content = e.target.querySelector("input").value;
-    handleComment(tweetId, content);
-  });
-  const commentsDiv = document.getElementById(`comments-${tweetId}`);
-  commentsDiv.appendChild(commentForm);
 }
 
 async function handleComment(tweetId, content) {
@@ -111,14 +123,12 @@ async function handleComment(tweetId, content) {
         "Content-Type": "application/json",
         Authorization: `Bearer ${token}`,
       },
-      body: JSON.stringify({ tweet_id: tweetId, content: content }),
+      body: JSON.stringify({ tweet_id: tweetId, content }),
     });
     if (!response.ok) throw new Error("Failed to add comment");
-    alert("Comment added successfully!");
     loadTweets();
   } catch (error) {
-    console.error("Error adding comment:", error);
-    alert("Failed to add comment. Please try again.");
+    console.error("Error:", error);
   }
 }
 
@@ -130,21 +140,15 @@ async function loadTweets() {
         "Content-Type": "application/json",
         Authorization: `Bearer ${token}`,
       },
+      body: JSON.stringify({}),
     });
     if (!response.ok) throw new Error("Failed to load tweets");
     const data = await response.json();
     if (data.reports && data.reports.length > 0) {
-      const tweets = data.reports.map((report) => ({
-        id: report.id,
-        ...report.context,
-      }));
-      renderTweets(tweets);
-    } else {
-      document.getElementById("tweets").innerHTML = "<p>No tweets found.</p>";
+      renderTweets(data.reports);
     }
   } catch (error) {
-    console.error("Error loading tweets:", error);
-    alert("Failed to load tweets. Please try again.");
+    console.error("Error:", error);
   }
 }
 

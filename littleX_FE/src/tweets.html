@@ -11,24 +11,62 @@
     />
   </head>
   <body>
-    <div class="tweets-container">
-      <header>
-        <h1>littleX Tweets</h1>
+    <header class="top-nav">
+      <div class="nav-content">
+        <h1>LittleX</h1>
         <button id="logoutButton">Logout</button>
-      </header>
-      <div id="tweets">
-        <!-- Tweets will be dynamically loaded here -->
       </div>
-      <form id="tweetForm">
-        <textarea
-          id="tweetContent"
-          placeholder="What's on your mind?"
-          rows="3"
-          required
-        ></textarea>
-        <button type="submit">Tweet</button>
-      </form>
+    </header>
+    <div class="main-content">
+      <div class="tweets-container">
+        <form id="tweetForm">
+          <textarea
+            id="tweetContent"
+            placeholder="What's on your mind?"
+            rows="3"
+            required
+          ></textarea>
+          <button type="submit">Post</button>
+        </form>
+        <div id="tweets">
+          <!-- Tweets will be dynamically loaded here -->
+        </div>
+      </div>
     </div>
+
+    <!-- Template for a single tweet (hidden) -->
+    <template id="tweet-template">
+      <div class="tweet">
+        <div class="username"></div>
+        <div class="content"></div>
+        <div class="tweet-actions">
+          <button class="like-btn">
+            <i class="fas fa-heart"></i>
+            <span class="count"></span>
+          </button>
+          <button class="comment-btn">
+            <i class="fas fa-comment"></i>
+            <span class="count"></span>
+          </button>
+        </div>
+        <div class="comments-section" style="display: none">
+          <!-- Comments will be dynamically loaded here -->
+          <form class="comment-form">
+            <input type="text" placeholder="Post your reply" required />
+            <button type="submit">Reply</button>
+          </form>
+        </div>
+      </div>
+    </template>
+
+    <!-- Template for a single comment (hidden) -->
+    <template id="comment-template">
+      <div class="comment">
+        <div class="username"></div>
+        <div class="content"></div>
+      </div>
+    </template>
+
     <script src="tweets.js"></script>
   </body>
 </html>

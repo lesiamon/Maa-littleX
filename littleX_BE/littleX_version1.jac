@@ -1,139 +1,157 @@
-import:py from sentence_transformers { SentenceTransformer, util }
-import:py base64;
-node Hastags {}
+import:py logging;
+import:py from jac_cloud.core.architype { NodeAnchor }
 
-node Profile {
-    has username: str;
+glob logger = logging.getLogger("littelX");
+
+node profile {
+    has username: str = "";
     has count_tag: dict = {};
+    has followees: list = [];
 }
 
-node Tweet {
+node tweet {
     has content: str;
-    has tag: str;
-    has embedding:str;
 }
 
-node Comment {
+node comment {
     has content: str;
-    has embedding:str;
-}
-
-edge post {}
-
-edge tag {
-    has name: str;
 }
 
 edge follow {}
 
 edge like {}
 
-glob model:SentenceTransformer = SentenceTransformer(
-    'sentence-transformers/multi-qa-mpnet-base-cos-v1'
-);
-glob Hastag: Hastags = Hastags();
-
 walker visit_profile {
-    has username: str;
-
-    can create with `root entry {
-        visit [-->(`?Profile)] else {
-            here ++> (profile:= Profile(self.username));
-            Jac.unrestrict(profile, 1);
-            visit [-->(`?Profile)];
+    can visit_profile with `root entry {
+        visit [-->(`?profile)] else {
+            logger.info("Creating new profile");
+            new_profile = here ++> profile();
+            visit new_profile;
         }
-        report [root-->];
-        
     }
 }
 
-walker follow_request:visit_profile: {
-    has profile_id : str;
-    can follow with Profile entry{
+walker update_profile :visit_profile: {
+    has new_username: str;
+
+    can update_profile with profile entry {
+        logger.info("Updating profile");
+        here.username = self.new_username;
+        report here;
+    }
+}
+
+walker get_profile :visit_profile: {
+    can get_profile with profile entry {
+        logger.info(f"prfile info: {here}");
+        report here;
+    }
+}
+
+walker follow_request :visit_profile: {
+    has profile_id: str;
+
+    can follow with profile entry {
+        here.followees.append(self.profile_id);
+        logger.info(f"New followee addded: {self.profile_id}");
         here +:follow():+> &self.profile_id;
+        report here;
     }
 }
 
-walker load_feed:visit_profile: {
-    can load with Profile entry {
-        feed =[];       
-        for user in [here -:follow:->]{
-            for tweet in [user -->(`?Tweet)] {
-                feed.append((tweet.content, user.username, len([tweet<-:like:-])));
-            }
+walker load_comments {
+    has comments: list = [];
+
+    can load_comments with tweet entry {
+        visit [-->](`?comment);
+    }
+
+    can report_comments with comment entry {
+        self.comments.append(here);
+    }
+}
+
+walker load_likes {
+    has likes: list = [];
+
+    can load_likes with tweet entry {
+        visit [<-:like:-];
+    }
+
+    can load_lprofile with profile entry {
+        self.likes.append({"username": here.username});
+    }
+
+}
+
+walker load_tweets :visit_profile: {
+    has tweet_info: dict = {};
+
+    can go_to_tweet with profile entry {
+        visit [-->](`?tweet);
+    }
+
+    can load_tweets with tweet entry {
+        logger.info(f"tweet loaded: {here}");
+        comments = here spawn load_comments();
+        likes = here spawn load_likes();
+        self.tweet_info = {"comments": comments.comments, "likes": likes, "tweet": here};
+        report self.tweet_info;
+    }
+}
+
+walker load_feed :visit_profile: {
+    can load with profile entry {
+        self.feed: list = [];
+        
+        for user in here.followees {
+            user_node = &user;
+            Jac.allow_root(user_node, NodeAnchor.ref(user), "READ");
+            logger.info("Acess has given");
+            user_node spawn load_tweets();
+            Jac.disallow_root(here, NodeAnchor.ref(user));
+            logger.info("Removing acess");
         }
-        report feed;
+        logger.info(f"all feeds: {self.feed}");
     }
 }
 
-walker update_tag {
-    can update with Tweet entry {
-        :g: Hastag;
-        here <+:tag(here.tag):+ Hastag;
-    }
-}
-
-walker create_tweet:visit_profile: {
+walker create_tweet :visit_profile: {
     has content: str;
-    has tag: str;
 
-    can tweet with Profile entry {
-        embedding_str = base64.b64encode(model.encode(self.content)).decode('utf-8');
-        here +:post():+> (tweet:= Tweet(self.content, self.tag, embedding_str));
-        Jac.unrestrict(tweet, 1);
-        tweet spawn update_tag();
-        report jid(tweet);
+    can tweet with profile entry {
+        tweet_node = here ++> tweet(content=self.content);
+        visit tweet_node;
+    }
+
+    can report_tweet with tweet entry {
+        logger.info(f"Creating new tweet: {here.content}");
+        Jac.unrestrict(here, level="READ");
+        report here;
     }
 }
 
-walker like_tweet:visit_profile: {
+walker like_tweet :visit_profile: {
     has tweet_id: str;
 
-    can like with Profile entry {
-        here +:like():+> (tweet:=&self.tweet_id);
+    can like with profile entry {
+        tweet_node = &self.tweet_id;
+        here +:like():+> (tweet := tweet_node);
+        logger.info(f"liked to a tweet: {tweet_node}");
+        report tweet_node;
     }
 }
 
-walker comment_tweet:visit_profile: {
+walker comment_tweet :visit_profile: {
     has tweet_id: str;
     has content: str;
 
-    can comment with Profile entry {
-        embedding_str = base64.b64encode(model.encode(self.content)).decode('utf-8');
-        (tweet:= &self.tweet_id) ++> (comment:= Comment(self.content, embedding_str));
-        Jac.unrestrict(comment, 1);
-        report jid(comment);
+    can add_comment with profile entry {
+        comment_node = here ++> comment(content=self.content);
+        tweet_node = &self.tweet_id;
+        Jac.unrestrict(tweet_node, level="CONNECT");
+        tweet_node ++> comment_node[0];
+        logger.info(f"comment added: {comment_node[0]}");
+        report comment_node[0];
     }
 }
-
-walker search_tweets:visit_profile: {
-    has query: str;
-
-    can search with Profile entry {
-        :g: Hastag ;
-        result = [];
-        if (i := [Hastag-:tag:name == self.query:->]) {
-            tweets = i;
-            for tweet in tweets{
-                user = [tweet<-:post:-][0];
-                result.append([tweet.content, user.username, len([tweet<-:like:-])]);
-            }
-        } else {
-            tweets =[];
-            for user in [here -:follow:->]{
-                for tweet in [user -->(`?Tweet)] {
-                    tweets.append((tweet.content, user.username, len([tweet<-:like:-])));
-                }
-            }
-            docs = [tweet[0] for tweet in tweets];
-            scores = util.dot_score(model.encode(self.query), model.encode(docs))[0].cpu().tolist();
-            doc_score_pairs = list(zip([i for (i, _) in enumerate(docs)], scores));
-            doc_score_pairs = sorted(doc_score_pairs,key=(with x: int can x[1]), reverse=True);
-            result = [tweets[i] for (i, _) in doc_score_pairs[:5]];
-        }
-        report result;
-    }
-}
-
-
-
