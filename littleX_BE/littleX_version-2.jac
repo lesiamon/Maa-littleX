@@ -117,7 +117,11 @@ walker load_comments {
 
     can report_comments with comment entry {
         Jac.unrestrict(here, level="READ");
-        self.comments.append(here);
+        commenter = [<--](`?profile);
+        self.comments.append({
+            "commenter": commenter[0].username,
+            "commnet": here
+        });
     }
 }
 
@@ -148,9 +152,8 @@ walker load_feed :visit_profile: {
         for user in here.followees {
             user_node = &user;
             Jac.unrestrict(user_node, level="READ");
-            logger.info("Acess has given");
+            logger.info("Acess has given to profile node");
             user_node spawn load_tweets();
-            logger.info("Removing acess");
         }
     }
 }
