@@ -172,6 +172,7 @@ walker like_tweet :visit_profile: {
 
     can like with profile entry {
         tweet_node = &self.tweet_id;
+        Jac.unrestrict(tweet_node, level="CONNECT");
         here +:like():+> (tweet := tweet_node);
         logger.info(f"liked to a tweet: {tweet_node}");
         report tweet_node;
