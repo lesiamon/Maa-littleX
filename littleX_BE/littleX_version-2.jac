@@ -23,6 +23,8 @@ edge follow {}
 
 edge like {}
 
+edge post {}
+
 walker visit_profile {
     can visit_profile with `root entry {
         visit [-->(`?profile)] else {
@@ -82,10 +84,11 @@ walker load_likes {
     has likes: list = [];
 
     can load_likes with tweet entry {
-        visit [<-:like:-];
+        visit [-:like:->];
     }
 
     can load_profile with profile entry {
+        Jac.unrestrict(here, level="READ");
         self.likes.append({"username": here.username});
     }
 
@@ -94,9 +97,9 @@ walker load_likes {
 walker load_tweet {
     has tweet_info: dict = {};
 
-    can load_likes with tweet entry {
+    can load_tweets with tweet entry {
         self.tweet_info["content"] = here;
-        visit [<--(`?profile)];
+        visit [<-:post:-];
     }
 
     can load_profile with profile entry {
@@ -156,7 +159,7 @@ walker create_tweet :visit_profile: {
     has content: str;
 
     can tweet with profile entry {
-        tweet_node = here ++> tweet(content=self.content);
+        tweet_node = here +:post:+> tweet(content=self.content);
         visit tweet_node;
     }
 
@@ -173,7 +176,7 @@ walker like_tweet :visit_profile: {
     can like with profile entry {
         tweet_node = &self.tweet_id;
         Jac.unrestrict(tweet_node, level="CONNECT");
-        here +:like():+> (tweet := tweet_node);
+        tweet_node +:like():+> here;
         logger.info(f"liked to a tweet: {tweet_node}");
         report tweet_node;
     }
