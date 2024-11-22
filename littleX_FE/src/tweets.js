@@ -1,144 +1,340 @@
-// Check if the user is logged in
-const user = localStorage.getItem("authToken");
-if (!user) {
+const token = localStorage.getItem("authToken");
+if (!token) {
   window.location.href = "index.html";
 }
 
-// Logout functionality
+const BASE_URL = "http://0.0.0.0:8000/walker";
+const isProfilePage = window.location.pathname.includes("profile.html");
+
+let currentUserProfile = null;
+
 document.getElementById("logoutButton").addEventListener("click", () => {
   localStorage.removeItem("authToken");
   window.location.href = "index.html";
 });
 
-// Sample tweets
-const sampleTweets = [
-  {
-    user: "Alice",
-    content: "This is my first tweet on littleX!",
-    tags: ["#welcome"],
-    likes: 0,
-    comments: [],
-  },
-  {
-    user: "Bob",
-    content: "Loving the simplicity of this platform.",
-    tags: ["#simple", "#userFriendly"],
-    likes: 2,
-    comments: [],
-  },
-];
-
-// Track followed users
-const followedUsers = new Set();
-
-// Function to render tweets
-const tweetsDiv = document.getElementById("tweets");
-function renderTweets() {
-  tweetsDiv.innerHTML = ""; // Clear current tweets
-  sampleTweets.forEach((tweet, index) => {
-    const isFollowing = followedUsers.has(tweet.user);
-    const tweetDiv = document.createElement("div");
-    tweetDiv.className = "tweet";
-    tweetDiv.innerHTML = `
-      <span class="user">${tweet.user}
-        <button class="follow-btn ${
-          isFollowing ? "following" : ""
-        }" data-user="${tweet.user}">
-          ${isFollowing ? "Following" : "Follow"}
-        </button>
-      </span>
-      <p class="content">${tweet.content}</p>
-      <p class="tags">${formatTags(tweet.tags)}</p>
-      <div class="tweet-actions">
-        <button class="like-btn" data-index="${index}">
-          <i class="fas fa-heart"></i> (<span class="like-count">${
-            tweet.likes
-          }</span>)
-        </button>
-        <button class="comment-btn" data-index="${index}">Comment</button>
-      </div>
-      <div class="comments" id="comments-${index}">
-        ${tweet.comments
-          .map(
-            (comment) => `
-          <div class="comment">
-            <strong>${comment.user}:</strong> ${comment.content}
-          </div>
-        `
-          )
-          .join("")}
-      </div>
-    `;
-    tweetsDiv.appendChild(tweetDiv);
-  });
-
-  // Add event listeners for like buttons
-  document.querySelectorAll(".like-btn").forEach((button) => {
-    button.addEventListener("click", handleLike);
-  });
-
-  // Add event listeners for follow buttons
-  document.querySelectorAll(".follow-btn").forEach((button) => {
-    button.addEventListener("click", toggleFollow);
-  });
-}
-
-// Handle likes
-function handleLike(event) {
-  const index = event.target.closest(".like-btn").dataset.index;
-  sampleTweets[index].likes += 1;
-  renderTweets();
-}
-
-// Toggle follow/unfollow
-function toggleFollow(event) {
-  const user = event.target.dataset.user;
-  if (followedUsers.has(user)) {
-    followedUsers.delete(user);
-    event.target.textContent = "Follow";
-    event.target.classList.remove("following");
-  } else {
-    followedUsers.add(user);
-    event.target.textContent = "Following";
-    event.target.classList.add("following");
+async function loadCurrentUserProfile() {
+  try {
+    const response = await fetch(`${BASE_URL}/get_profile`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify({}),
+    });
+    if (!response.ok) throw new Error("Failed to load profile");
+    const data = await response.json();
+    if (data.reports && data.reports.length > 0) {
+      currentUserProfile = data.reports[0];
+      const usernameElement = document.getElementById("username");
+      if (usernameElement) {
+        usernameElement.textContent =
+          currentUserProfile.context.username || "Anonymous";
+      }
+      return currentUserProfile;
+    }
+  } catch (error) {
+    console.error("Error loading profile:", error);
+    const usernameElement = document.getElementById("username");
+    if (usernameElement) {
+      usernameElement.textContent = "Anonymous";
+    }
   }
 }
 
-// Format tags for display
-function formatTags(tags) {
-  return tags.map((tag) => `<span class="tag">${tag}</span>`).join(", ");
+async function loadProfilesToFollow() {
+  try {
+    const response = await fetch(`${BASE_URL}/load_user_profiles`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({}),
+    });
+    if (!response.ok) throw new Error("Failed to load profiles");
+    const data = await response.json();
+
+    if (data.reports && data.reports.length > 0) {
+      const profiles = data.reports[0];
+      const followListElement = document.getElementById("followList");
+      followListElement.innerHTML = "";
+
+      profiles.forEach((profile) => {
+        if (
+          currentUserProfile &&
+          profile.name === currentUserProfile.context.username
+        )
+          return;
+
+        const template = document.getElementById("profile-template");
+        const profileElement = template.content.cloneNode(true);
+
+        profileElement.querySelector(".profile-name").textContent =
+          profile.name;
+        const followBtn = profileElement.querySelector(".follow-btn");
+
+        const isFollowing = currentUserProfile?.context.followees?.includes(
+          profile.id
+        );
+        if (isFollowing) {
+          followBtn.textContent = "Following";
+          followBtn.classList.add("following");
+        }
+
+        followBtn.addEventListener("click", () =>
+          handleFollow(profile.id, followBtn)
+        );
+        followListElement.appendChild(profileElement);
+      });
+    }
+  } catch (error) {
+    console.error("Error:", error);
+  }
 }
 
-// Handle new tweet submission
-document.getElementById("tweetForm").addEventListener("submit", function (e) {
-  e.preventDefault();
-
-  const tweetContent = document.getElementById("tweetContent").value.trim();
-  const tweetTags = document.getElementById("tweetTags").value.trim();
-
-  if (tweetContent) {
-    const tagsArray = tweetTags
-      .split(",")
-      .map((tag) => tag.trim())
-      .filter((tag) => tag);
-
-    sampleTweets.unshift({
-      user,
-      content: tweetContent,
-      tags: tagsArray,
-      likes: 0,
-      comments: [],
+async function handleFollow(profileId, button) {
+  try {
+    const response = await fetch(`${BASE_URL}/follow_request`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify({ profile_id: profileId }),
     });
 
-    renderTweets();
+    if (!response.ok) throw new Error("Failed to follow user");
 
-    // Clear input fields
-    document.getElementById("tweetContent").value = "";
-    document.getElementById("tweetTags").value = "";
-  } else {
-    alert("Tweet content cannot be empty");
+    if (button.classList.contains("following")) {
+      button.textContent = "Follow";
+      button.classList.remove("following");
+    } else {
+      button.textContent = "Following";
+      button.classList.add("following");
+    }
+
+    await loadCurrentUserProfile();
+  } catch (error) {
+    console.error("Error:", error);
   }
-});
+}
 
-// Render initial sample tweets
-renderTweets();
+function renderComment(comment) {
+  const template = document.getElementById("comment-template");
+  const commentElement = template.content.cloneNode(true);
+
+  commentElement.querySelector(".username").textContent = "Anonymous";
+  commentElement.querySelector(".content").textContent =
+    comment.context.content;
+
+  return commentElement;
+}
+
+function renderTweet(tweetData) {
+  const tweet = tweetData.tweet;
+  const comments = tweetData.comments;
+  const likes = tweetData.likes;
+  const likeCount = likes ? likes.length : null;
+  const isLiked = likes
+    ? likes.includes(currentUserProfile?.context?.id)
+    : false;
+
+  const template = document.getElementById("tweet-template");
+  const tweetElement = template.content.cloneNode(true);
+
+  const tweetHeader = tweetElement.querySelector(".tweet-header");
+  if (tweetHeader) {
+    tweetHeader.querySelector(".username").textContent = tweet.username;
+  } else {
+    tweetElement.querySelector(".username").textContent = tweet.username;
+  }
+
+  tweetElement.querySelector(".content").textContent =
+    tweet.content.context.content;
+
+  const likeBtn = tweetElement.querySelector(".like-btn");
+  const likeIcon = likeBtn.querySelector(".material-icons");
+  const countSpan = likeBtn.querySelector(".count");
+
+  // Only show count if there are likes
+  if (likeCount) {
+    countSpan.textContent = likeCount;
+    likeIcon.textContent = "favorite";
+    likeIcon.style.color = "red";
+  } else {
+    countSpan.textContent = "";
+    likeIcon.textContent = "favorite_border";
+    likeIcon.style.color = "";
+  }
+
+  // Rest of the render tweet function remains the same...
+  const commentBtn = tweetElement.querySelector(".comment-btn");
+  const commentsSection = tweetElement.querySelector(".comments-section");
+  commentBtn.querySelector(".count").textContent = comments.length;
+
+  comments.forEach((comment) => {
+    commentsSection.insertBefore(
+      renderComment(comment),
+      commentsSection.lastElementChild
+    );
+  });
+
+  commentBtn.addEventListener("click", () => {
+    commentsSection.style.display =
+      commentsSection.style.display === "none" ? "block" : "none";
+  });
+
+  likeBtn.addEventListener("click", async () => {
+    const icon = likeBtn.querySelector(".material-icons");
+    const currentCount = parseInt(countSpan.textContent) || 0;
+
+    if (icon.textContent === "favorite") {
+      icon.textContent = "favorite_border";
+      icon.style.color = "";
+      countSpan.textContent = currentCount > 1 ? currentCount - 1 : "";
+    } else {
+      icon.textContent = "favorite";
+      icon.style.color = "red";
+      countSpan.textContent = currentCount + 1;
+    }
+
+    await handleLike(tweet.content.id);
+  });
+
+  const commentForm = tweetElement.querySelector(".comment-form");
+  commentForm.addEventListener("submit", (e) => {
+    e.preventDefault();
+    const content = e.target.querySelector("input").value;
+    handleComment(tweet.content.id, content);
+    e.target.reset();
+  });
+
+  return tweetElement;
+}
+function renderTweets(tweetsData) {
+  const tweetsDiv = document.getElementById(
+    isProfilePage ? "userTweets" : "tweets"
+  );
+  tweetsDiv.innerHTML = "";
+  tweetsData.forEach((tweetData) => {
+    tweetsDiv.appendChild(renderTweet(tweetData));
+  });
+}
+
+if (!isProfilePage) {
+  document
+    .getElementById("tweetForm")
+    .addEventListener("submit", async function (e) {
+      e.preventDefault();
+      const content = document.getElementById("tweetContent").value.trim();
+      if (!content) return;
+
+      try {
+        const response = await fetch(`${BASE_URL}/create_tweet`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({ content }),
+        });
+        if (!response.ok) throw new Error("Failed to create tweet");
+        document.getElementById("tweetContent").value = "";
+        loadTweets();
+      } catch (error) {
+        console.error("Error:", error);
+      }
+    });
+}
+
+async function handleLike(tweetId) {
+  try {
+    const response = await fetch(`${BASE_URL}/like_tweet`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify({ tweet_id: tweetId }),
+    });
+    if (!response.ok) throw new Error("Failed to like tweet");
+  } catch (error) {
+    console.error("Error:", error);
+    // Reload tweets to revert UI if error occurs
+    isProfilePage ? loadUserTweets() : loadTweets();
+  }
+}
+
+async function handleComment(tweetId, content) {
+  try {
+    const response = await fetch(`${BASE_URL}/comment_tweet`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify({ tweet_id: tweetId, content }),
+    });
+    if (!response.ok) throw new Error("Failed to add comment");
+    isProfilePage ? loadUserTweets() : loadTweets();
+  } catch (error) {
+    console.error("Error:", error);
+  }
+}
+
+async function loadTweets() {
+  try {
+    const response = await fetch(`${BASE_URL}/load_feed`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify({}),
+    });
+    if (!response.ok) throw new Error("Failed to load tweets");
+    const data = await response.json();
+    if (data.reports && data.reports.length > 0) {
+      renderTweets(data.reports);
+    }
+  } catch (error) {
+    console.error("Error:", error);
+  }
+}
+
+async function loadUserTweets() {
+  try {
+    const response = await fetch(`${BASE_URL}/load_tweets`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify({ tweet_info: {} }),
+    });
+    if (!response.ok) throw new Error("Failed to load tweets");
+    const data = await response.json();
+    if (data.reports && data.reports.length > 0) {
+      renderTweets(data.reports);
+    }
+  } catch (error) {
+    console.error("Error:", error);
+  }
+}
+
+async function initializePage() {
+  try {
+    await loadCurrentUserProfile();
+    if (isProfilePage) {
+      await loadUserTweets();
+    } else {
+      await loadTweets();
+      await loadProfilesToFollow();
+    }
+  } catch (error) {
+    console.error("Page initialization error:", error);
+  }
+}
+
+initializePage();

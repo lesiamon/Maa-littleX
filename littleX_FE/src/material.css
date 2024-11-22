@@ -1,0 +1,317 @@
+:root {
+  --md-primary: #6200ee;
+  --md-primary-variant: #3700b3;
+  --md-secondary: #03dac6;
+  --md-surface: #ffffff;
+  --md-background: #f5f5f5;
+  --md-error: #b00020;
+  --md-on-primary: #ffffff;
+  --md-on-surface: #000000;
+  --md-elevation-2: 0 3px 3px -2px rgba(0, 0, 0, 0.2),
+    0 3px 4px 0 rgba(0, 0, 0, 0.14), 0 1px 8px 0 rgba(0, 0, 0, 0.12);
+}
+
+body {
+  margin: 0;
+  padding-top: 64px;
+  font-family: Roboto, Arial, sans-serif;
+  background-color: var(--md-background);
+  color: var(--md-on-surface);
+  line-height: 1.5;
+}
+
+a {
+  text-decoration: none;
+}
+
+.md-app-bar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 64px;
+  background-color: var(--md-primary);
+  color: var(--md-on-primary);
+  z-index: 4;
+  box-shadow: var(--md-elevation-2);
+}
+
+.md-app-bar-content {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 100%;
+  padding: 0 16px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.md-app-bar-actions {
+  display: flex;
+  align-items: center;
+}
+
+.md-app-bar-title {
+  color: var(--md-on-primary);
+}
+
+.md-app-bar-title h1 {
+  margin: 0;
+  font-size: 1.25rem;
+  font-weight: 500;
+}
+
+#logoutButton {
+  margin-left: 16px;
+  border: 1px solid white;
+}
+
+.md-content {
+  padding: 24px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.md-grid {
+  display: grid;
+  grid-template-columns: 1fr 300px;
+  gap: 24px;
+}
+
+.md-card {
+  background: var(--md-surface);
+  border-radius: 8px;
+  border: 1px solid rgba(0, 0, 0, 0.12);
+  margin-bottom: 16px;
+  overflow: hidden;
+}
+
+#tweetForm {
+  padding: 16px;
+}
+
+#tweetForm .md-text-field textarea {
+  width: 100%;
+  min-height: 120px;
+  padding: 16px;
+  border: 1px solid rgba(0, 0, 0, 0.12);
+  border-radius: 12px;
+  font-size: 16px;
+  resize: none;
+  color: rgba(0, 0, 0, 0.87);
+  font-family: inherit;
+  box-sizing: border-box;
+}
+
+#tweetForm .md-text-field textarea:focus {
+  outline: none;
+  border-color: #5b21b6;
+}
+
+#tweetForm .md-text-field textarea::placeholder {
+  color: rgba(0, 0, 0, 0.6);
+  font-size: 20px;
+}
+
+#tweetForm .md-text-field {
+  margin-bottom: 16px;
+}
+
+#tweetForm .md-button {
+  background: #5b21b6;
+  color: white;
+  padding: 0 24px;
+  font-size: 14px;
+  border-radius: 24px;
+}
+
+.md-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 16px;
+  height: 36px;
+  border: none;
+  border-radius: 4px;
+  font-size: 0.875rem;
+  font-weight: 500;
+  text-transform: uppercase;
+  cursor: pointer;
+}
+
+.md-button-text {
+  background-color: transparent;
+  color: inherit;
+  padding: 0 8px;
+}
+
+.md-tweet {
+  border-bottom: 1px solid rgba(0, 0, 0, 0.12);
+}
+
+.md-tweet:last-child {
+  border-bottom: none;
+}
+
+.md-tweet .md-card-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 16px;
+}
+
+.md-tweet .material-icons {
+  font-size: 24px;
+}
+
+.md-tweet .username {
+  font-weight: 500;
+}
+
+.md-tweet .content {
+  padding: 0 16px;
+  margin-bottom: 12px;
+}
+
+.md-card-actions {
+  display: flex;
+  padding: 4px 16px;
+  gap: 16px;
+}
+
+.md-card-actions button {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 8px;
+  background: transparent;
+  border: none;
+  color: rgba(0, 0, 0, 0.6);
+  cursor: pointer;
+}
+
+.md-card-actions button:hover {
+  background-color: rgba(0, 0, 0, 0.04);
+  border-radius: 4px;
+}
+
+.comments-section {
+  padding: 16px;
+  border-top: 1px solid rgba(0, 0, 0, 0.12);
+}
+
+.comment {
+  padding: 8px 0;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.12);
+}
+
+.comment:last-child {
+  border-bottom: none;
+}
+
+.comment-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.comment .username {
+  font-weight: 500;
+}
+
+.comment-form {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  margin-top: 16px;
+}
+
+.comment-form input {
+  flex: 1;
+  padding: 8px 12px;
+  border: 1px solid rgba(0, 0, 0, 0.12);
+  border-radius: 4px;
+  font-size: 14px;
+}
+
+.comment-form input:focus {
+  outline: none;
+  border-color: #5b21b6;
+}
+
+.comment-form .md-button {
+  background: #5b21b6;
+  color: white;
+}
+
+.md-content-side .md-card-header {
+  padding: 16px;
+  font-size: 20px;
+  font-weight: 500;
+}
+
+.md-content-side .md-card-header h2 {
+  margin: 0;
+  font-size: inherit;
+}
+
+.md-list-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 16px;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.12);
+}
+
+.md-list-item:last-child {
+  border-bottom: none;
+}
+
+.md-list-item-text {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.md-list-item .follow-btn {
+  border: 1px solid #5b21b6;
+  color: #5b21b6;
+  padding: 0 16px;
+  font-size: 14px;
+}
+
+.md-list-item .follow-btn.following {
+  background: #5b21b6;
+  color: white;
+}
+
+@media (max-width: 960px) {
+  .md-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 600px) {
+  .md-content {
+    padding: 16px;
+  }
+
+  #username {
+    display: none;
+  }
+
+  .md-list-item {
+    padding: 8px 12px;
+  }
+
+  .md-list-item .follow-btn {
+    padding: 0 12px;
+  }
+}
+
+@media (max-width: 480px) {
+  .md-content {
+    padding: 8px;
+  }
+}

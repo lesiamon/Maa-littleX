@@ -134,6 +134,3 @@ walker search_tweets:visit_profile: {
         report result;
     }
 }
-
-
-
