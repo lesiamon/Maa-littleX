@@ -35,14 +35,14 @@
     <main class="md-content">
       <div class="md-grid">
         <div class="md-content-main">
-          <div class="md-card">
+          <!-- Fixed Tweet Form -->
+          <div class="md-card tweet-form-card">
             <form id="tweetForm" class="md-card-content">
               <div class="md-text-field">
                 <textarea
                   id="tweetContent"
                   class="md-text-field-input"
                   placeholder="What's on your mind?"
-                  rows="3"
                   required
                 ></textarea>
               </div>
@@ -51,7 +51,9 @@
               </button>
             </form>
           </div>
-          <div id="tweets" class="md-tweets-container"></div>
+
+          <!-- Scrollable Tweets Container -->
+          <div class="md-tweets-container" id="tweets"></div>
         </div>
 
         <div class="md-content-side">

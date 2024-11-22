@@ -18,6 +18,8 @@ body {
   background-color: var(--md-background);
   color: var(--md-on-surface);
   line-height: 1.5;
+  height: 100vh;
+  overflow: hidden;
 }
 
 a {
@@ -70,20 +72,32 @@ a {
   padding: 24px;
   max-width: 1200px;
   margin: 0 auto;
+  height: calc(100vh - 64px - 48px);
+  position: relative;
 }
 
 .md-grid {
   display: grid;
   grid-template-columns: 1fr 300px;
   gap: 24px;
+  height: 100%;
 }
 
-.md-card {
+/* Main content area with fixed form and scrollable tweets */
+.md-content-main {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  overflow: hidden;
+}
+
+/* Tweet form card */
+.tweet-form-card {
+  flex-shrink: 0;
   background: var(--md-surface);
   border-radius: 8px;
   border: 1px solid rgba(0, 0, 0, 0.12);
   margin-bottom: 16px;
-  overflow: hidden;
 }
 
 #tweetForm {
@@ -92,7 +106,7 @@ a {
 
 #tweetForm .md-text-field textarea {
   width: 100%;
-  min-height: 120px;
+  height: 100px;
   padding: 16px;
   border: 1px solid rgba(0, 0, 0, 0.12);
   border-radius: 12px;
@@ -103,46 +117,29 @@ a {
   box-sizing: border-box;
 }
 
-#tweetForm .md-text-field textarea:focus {
-  outline: none;
-  border-color: #5b21b6;
-}
-
-#tweetForm .md-text-field textarea::placeholder {
-  color: rgba(0, 0, 0, 0.6);
-  font-size: 20px;
-}
-
 #tweetForm .md-text-field {
   margin-bottom: 16px;
 }
 
-#tweetForm .md-button {
-  background: #5b21b6;
-  color: white;
-  padding: 0 24px;
-  font-size: 14px;
-  border-radius: 24px;
+/* Tweets container */
+.md-tweets-container {
+  flex: 1;
+  overflow-y: auto;
+  padding-right: 8px;
 }
 
-.md-button {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  padding: 0 16px;
-  height: 36px;
-  border: none;
-  border-radius: 4px;
-  font-size: 0.875rem;
-  font-weight: 500;
-  text-transform: uppercase;
-  cursor: pointer;
+/* Sidebar */
+.md-content-side {
+  position: sticky;
+  top: 88px;
+  height: fit-content;
 }
 
-.md-button-text {
-  background-color: transparent;
-  color: inherit;
-  padding: 0 8px;
+.md-card {
+  background: var(--md-surface);
+  border-radius: 8px;
+  border: 1px solid rgba(0, 0, 0, 0.12);
+  margin-bottom: 16px;
 }
 
 .md-tweet {
@@ -171,6 +168,34 @@ a {
 .md-tweet .content {
   padding: 0 16px;
   margin-bottom: 12px;
+}
+
+.md-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 16px;
+  height: 36px;
+  border: none;
+  border-radius: 4px;
+  font-size: 0.875rem;
+  font-weight: 500;
+  text-transform: uppercase;
+  cursor: pointer;
+}
+
+.md-button-text {
+  background-color: transparent;
+  color: inherit;
+  padding: 0 8px;
+}
+
+#tweetForm .md-button {
+  background: #5b21b6;
+  color: white;
+  padding: 0 24px;
+  font-size: 14px;
+  border-radius: 24px;
 }
 
 .md-card-actions {
@@ -290,11 +315,21 @@ a {
   .md-grid {
     grid-template-columns: 1fr;
   }
+
+  .md-content-side {
+    position: static;
+    height: auto;
+  }
+
+  .md-content-main {
+    padding-right: 0;
+  }
 }
 
 @media (max-width: 600px) {
   .md-content {
     padding: 16px;
+    height: calc(100vh - 64px - 32px);
   }
 
   #username {
@@ -313,5 +348,6 @@ a {
 @media (max-width: 480px) {
   .md-content {
     padding: 8px;
+    height: calc(100vh - 64px - 16px);
   }
 }

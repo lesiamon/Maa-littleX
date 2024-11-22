@@ -120,25 +120,26 @@ async function handleFollow(profileId, button) {
   }
 }
 
-function renderComment(comment) {
+function renderComment(commentData) {
   const template = document.getElementById("comment-template");
   const commentElement = template.content.cloneNode(true);
 
-  commentElement.querySelector(".username").textContent = "Anonymous";
+  commentElement.querySelector(".username").textContent =
+    commentData.commenter || "Anonymous";
   commentElement.querySelector(".content").textContent =
-    comment.context.content;
+    commentData.commnet.context.content;
 
   return commentElement;
 }
 
 function renderTweet(tweetData) {
   const tweet = tweetData.tweet;
-  const comments = tweetData.comments;
-  const likes = tweetData.likes;
-  const likeCount = likes ? likes.length : null;
-  const isLiked = likes
-    ? likes.includes(currentUserProfile?.context?.id)
-    : false;
+  const comments = tweetData.comments || [];
+  const likes = tweetData.likes || [];
+  const likeCount = likes.length;
+  const isLiked = likes.some(
+    (like) => like.username === currentUserProfile?.context?.username
+  );
 
   const template = document.getElementById("tweet-template");
   const tweetElement = template.content.cloneNode(true);
@@ -158,17 +159,16 @@ function renderTweet(tweetData) {
   const countSpan = likeBtn.querySelector(".count");
 
   // Only show count if there are likes
-  if (likeCount) {
+  if (likeCount > 0) {
     countSpan.textContent = likeCount;
-    likeIcon.textContent = "favorite";
-    likeIcon.style.color = "red";
+    likeIcon.textContent = isLiked ? "favorite" : "favorite_border";
+    likeIcon.style.color = isLiked ? "red" : "";
   } else {
     countSpan.textContent = "";
     likeIcon.textContent = "favorite_border";
     likeIcon.style.color = "";
   }
 
-  // Rest of the render tweet function remains the same...
   const commentBtn = tweetElement.querySelector(".comment-btn");
   const commentsSection = tweetElement.querySelector(".comments-section");
   commentBtn.querySelector(".count").textContent = comments.length;
