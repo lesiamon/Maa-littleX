@@ -83,7 +83,6 @@ a {
   height: 100%;
 }
 
-/* Main content area with fixed form and scrollable tweets */
 .md-content-main {
   display: flex;
   flex-direction: column;
@@ -91,7 +90,6 @@ a {
   overflow: hidden;
 }
 
-/* Tweet form card */
 .tweet-form-card {
   flex-shrink: 0;
   background: var(--md-surface);
@@ -121,14 +119,14 @@ a {
   margin-bottom: 16px;
 }
 
-/* Tweets container */
 .md-tweets-container {
   flex: 1;
   overflow-y: auto;
+  overflow-x: visible !important;
   padding-right: 8px;
+  padding-top: 8px;
 }
 
-/* Sidebar */
 .md-content-side {
   position: sticky;
   top: 88px;
@@ -140,10 +138,12 @@ a {
   border-radius: 8px;
   border: 1px solid rgba(0, 0, 0, 0.12);
   margin-bottom: 16px;
+  overflow: visible !important;
 }
 
 .md-tweet {
   border-bottom: 1px solid rgba(0, 0, 0, 0.12);
+  overflow: visible !important;
 }
 
 .md-tweet:last-child {
@@ -202,6 +202,8 @@ a {
   display: flex;
   padding: 4px 16px;
   gap: 16px;
+  position: relative;
+  overflow: visible;
 }
 
 .md-card-actions button {
@@ -218,6 +220,53 @@ a {
 .md-card-actions button:hover {
   background-color: rgba(0, 0, 0, 0.04);
   border-radius: 4px;
+}
+
+.like-btn {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.like-tooltip {
+  position: absolute;
+  bottom: calc(100% + 8px);
+  left: 50%;
+  transform: translateX(-50%);
+  background-color: rgba(0, 0, 0, 0.85);
+  color: white;
+  padding: 8px 16px;
+  border-radius: 6px;
+  font-size: 13px;
+  white-space: normal;
+  max-width: 250px;
+  min-width: 120px;
+  text-align: center;
+  line-height: 1.4;
+  visibility: hidden;
+  opacity: 0;
+  transition: all 0.2s ease;
+  z-index: 1000;
+  word-wrap: break-word;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.like-tooltip::after {
+  content: "";
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  border-width: 6px;
+  border-style: solid;
+  border-color: rgba(0, 0, 0, 0.85) transparent transparent transparent;
+}
+
+.like-btn:hover .like-tooltip {
+  visibility: visible;
+  opacity: 1;
+  transform: translateX(-50%) translateY(-4px);
 }
 
 .comments-section {
@@ -324,6 +373,10 @@ a {
   .md-content-main {
     padding-right: 0;
   }
+
+  .like-tooltip {
+    max-width: 220px;
+  }
 }
 
 @media (max-width: 600px) {
@@ -342,6 +395,12 @@ a {
 
   .md-list-item .follow-btn {
     padding: 0 12px;
+  }
+
+  .like-tooltip {
+    max-width: 200px;
+    font-size: 12px;
+    padding: 6px 12px;
   }
 }
 

@@ -35,7 +35,6 @@
     <main class="md-content">
       <div class="md-grid">
         <div class="md-content-main">
-          <!-- Fixed Tweet Form -->
           <div class="md-card tweet-form-card">
             <form id="tweetForm" class="md-card-content">
               <div class="md-text-field">
@@ -52,7 +51,6 @@
             </form>
           </div>
 
-          <!-- Scrollable Tweets Container -->
           <div class="md-tweets-container" id="tweets"></div>
         </div>
 
@@ -84,7 +82,11 @@
             <span class="count"></span>
           </button>
         </div>
-        <div class="comments-section" style="display: none">
+        <div class="comments-section">
+          <div class="comments-container">
+            <div class="first-comment"></div>
+            <div class="remaining-comments" style="display: none"></div>
+          </div>
           <form class="comment-form md-text-field">
             <input
               type="text"
