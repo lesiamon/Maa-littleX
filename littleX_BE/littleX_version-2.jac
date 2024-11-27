@@ -1,8 +1,10 @@
 import:py logging;
 import:py datetime;
 import:py from jac_cloud.core.architype { NodeAnchor }
+import:py from mtllm.llms { OpenAI }
 
 glob logger = logging.getLogger("littelX");
+glob llm = OpenAI(model_name="gpt-4o");
 
 node profile {
     has username: str = "";
@@ -24,6 +26,9 @@ edge follow {}
 edge like {}
 
 edge post {}
+
+can 'Summarize what uwers are talking abouth in their latest trends, major events, and notable interactions from the recent tweets in one line.'
+summarise_tweets(tweets: list[str]) -> 'Summarisation': str by llm();
 
 walker visit_profile {
     can visit_profile with `root entry {
@@ -118,43 +123,54 @@ walker load_comments {
     can report_comments with comment entry {
         Jac.unrestrict(here, level="READ");
         commenter = [<--](`?profile);
-        self.comments.append({
-            "commenter": commenter[0].username,
-            "commnet": here
-        });
+        self.comments.append(
+            {"commenter": commenter[0].username, "commnet": here}
+        );
     }
 }
 
 walker load_tweets :visit_profile: {
-    has tweet_info: dict = {};
+    has if_report: bool = False;
 
     can go_to_tweet with profile entry {
         visit [-->](`?tweet);
     }
 
     can load_tweets with tweet entry {
+        self.tweet_info: dict = {};
         Jac.unrestrict(here, level="READ");
         comments = here spawn load_comments();
         likes = here spawn load_likes();
         tweet_content = here spawn load_tweet();
+
         self.tweet_info = {
             "comments": comments.comments,
             "likes": likes.likes,
             "tweet": tweet_content.tweet_info
         };
-        report self.tweet_info;
+        if self.if_report {
+            report self.tweet_info;
+        }
     }
 }
 
 walker load_feed :visit_profile: {
     can load with profile entry {
-        here spawn load_tweets();
+        self.feeds: list = [];
+        user_tweets = here spawn load_tweets();
+        self.feeds.append(user_tweets.tweet_info);
+        
         for user in here.followees {
             user_node = &user;
             Jac.unrestrict(user_node, level="READ");
             logger.info("Acess has given to profile node");
-            user_node spawn load_tweets();
+            user_tweets = user_node spawn load_tweets();
+            self.feeds.append(user_tweets.tweet_info);
         }
+        result = [feed['tweet']['content'].content for feed in self.feeds];
+
+        self.summary: str = summarise_tweets(result);
+        report {"feeds": self.feeds, "summary": self.summary};
     }
 }
 
@@ -181,6 +197,17 @@ walker like_tweet :visit_profile: {
         Jac.unrestrict(tweet_node, level="CONNECT");
         tweet_node +:like():+> here;
         logger.info(f"liked to a tweet: {tweet_node}");
+        report tweet_node;
+    }
+}
+
+walker remove_like :visit_profile: {
+    has tweet_id: str;
+
+    can remove_like with profile entry {
+        tweet_node = &self.tweet_id;
+        tweet_node del-:like:-> here;
+        logger.info(f"Reomve liked to a tweet: {tweet_node}");
         report tweet_node;
     }
 }
