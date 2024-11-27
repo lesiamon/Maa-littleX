@@ -2,9 +2,13 @@ import:py logging;
 import:py datetime;
 import:py from jac_cloud.core.architype { NodeAnchor }
 import:py from mtllm.llms { OpenAI }
+import:py from sentence_transformers { SentenceTransformer }
+import:py from sklearn.metrics.pairwise { cosine_similarity }
+import:py numpy;
 
 glob logger = logging.getLogger("littelX");
 glob llm = OpenAI(model_name="gpt-4o");
+glob model = SentenceTransformer('all-MiniLM-L6-v2');
 
 node profile {
     has username: str = "";
@@ -29,6 +33,20 @@ edge post {}
 
 can 'Summarize what uwers are talking abouth in their latest trends, major events, and notable interactions from the recent tweets in one line.'
 summarise_tweets(tweets: list[str]) -> 'Summarisation': str by llm();
+
+can search_tweets(query: str, tweets: any, tweet_embeddings: any, top_n: int=3) {
+    query_embedding = model.encode([query]);
+    similarities = cosine_similarity(query_embedding, tweet_embeddings)[0];
+    top_indices = numpy.argsort(similarities)[::-1][:top_n];
+    results = [
+        {
+            **tweets[i], 
+            "similarity": similarities[i] 
+        }
+        for i in top_indices
+    ];
+    return results;
+}
 
 walker visit_profile {
     can visit_profile with `root entry {
@@ -131,46 +149,62 @@ walker load_comments {
 
 walker load_tweets :visit_profile: {
     has if_report: bool = False;
+    has tweets:list = [];
 
     can go_to_tweet with profile entry {
         visit [-->](`?tweet);
     }
 
     can load_tweets with tweet entry {
-        self.tweet_info: dict = {};
         Jac.unrestrict(here, level="READ");
         comments = here spawn load_comments();
         likes = here spawn load_likes();
         tweet_content = here spawn load_tweet();
 
-        self.tweet_info = {
+        tweet_info = {
             "comments": comments.comments,
             "likes": likes.likes,
             "tweet": tweet_content.tweet_info
         };
+        self.tweets.append(tweet_info );
         if self.if_report {
-            report self.tweet_info;
+            report self.tweets;
         }
     }
 }
 
 walker load_feed :visit_profile: {
+    has search_query:str = "";
     can load with profile entry {
         self.feeds: list = [];
         user_tweets = here spawn load_tweets();
-        self.feeds.append(user_tweets.tweet_info);
+        self.feeds.extend(user_tweets.tweets);
         
         for user in here.followees {
             user_node = &user;
             Jac.unrestrict(user_node, level="READ");
             logger.info("Acess has given to profile node");
             user_tweets = user_node spawn load_tweets();
-            self.feeds.append(user_tweets.tweet_info);
+            self.feeds.extend(user_tweets.tweets);
         }
-        result = [feed['tweet']['content'].content for feed in self.feeds];
+        tweets = [feed['tweet']['content'].content for feed in self.feeds];
+        self.summary: str = summarise_tweets(tweets);
 
-        self.summary: str = summarise_tweets(result);
-        report {"feeds": self.feeds, "summary": self.summary};
+        # Filter tweets based on search query
+        if (self.search_query) {
+            tweet_embeddings = model.encode(tweets);
+            filtered_results = search_tweets(self.search_query, self.feeds, tweet_embeddings);
+            report {
+            "feeds": filtered_results,
+            "summary": self.summary,
+        };
+        } else {
+            report {
+                "feeds": self.feeds,
+                "summary": self.summary
+            };
+        }      
+        
     }
 }
 
