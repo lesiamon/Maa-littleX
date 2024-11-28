@@ -373,7 +373,11 @@ async function loadTweets() {
     if (!response.ok) throw new Error("Failed to load tweets");
     const data = await response.json();
     if (data.reports && data.reports.length > 0) {
-      renderTweets(data.reports);
+      const summaryElement = document.getElementById("feed-summary");
+      if (summaryElement) {
+        summaryElement.textContent = data.reports[0].summary;
+      }
+      renderTweets(data.reports[0].feeds);
     }
   } catch (error) {
     console.error("Error:", error);
