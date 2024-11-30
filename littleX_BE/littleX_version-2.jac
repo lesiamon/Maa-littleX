@@ -31,20 +31,14 @@ edge like {}
 
 edge post {}
 
-can 'Summarize what uwers are talking abouth in their latest trends, major events, and notable interactions from the recent tweets in one line.'
+can 'Summarize what users are talking abouth in their latest trends, major events, and notable interactions from the recent tweets in one line.'
 summarise_tweets(tweets: list[str]) -> 'Summarisation': str by llm();
 
 can search_tweets(query: str, tweets: any, tweet_embeddings: any, top_n: int=3) {
     query_embedding = model.encode([query]);
     similarities = cosine_similarity(query_embedding, tweet_embeddings)[0];
     top_indices = numpy.argsort(similarities)[::-1][:top_n];
-    results = [
-        {
-            **tweets[i], 
-            "similarity": similarities[i] 
-        }
-        for i in top_indices
-    ];
+    results = [{**tweets[i], "similarity": similarities[i]} for i in top_indices];
     return results;
 }
 
@@ -149,7 +143,7 @@ walker load_comments {
 
 walker load_tweets :visit_profile: {
     has if_report: bool = False;
-    has tweets:list = [];
+    has tweets: list = [];
 
     can go_to_tweet with profile entry {
         visit [-->](`?tweet);
@@ -166,7 +160,7 @@ walker load_tweets :visit_profile: {
             "likes": likes.likes,
             "tweet": tweet_content.tweet_info
         };
-        self.tweets.append(tweet_info );
+        self.tweets.append(tweet_info);
         if self.if_report {
             report self.tweets;
         }
@@ -174,7 +168,8 @@ walker load_tweets :visit_profile: {
 }
 
 walker load_feed :visit_profile: {
-    has search_query:str = "";
+    has search_query: str = "";
+
     can load with profile entry {
         self.feeds: list = [];
         user_tweets = here spawn load_tweets();
@@ -193,18 +188,16 @@ walker load_feed :visit_profile: {
         # Filter tweets based on search query
         if (self.search_query) {
             tweet_embeddings = model.encode(tweets);
-            filtered_results = search_tweets(self.search_query, self.feeds, tweet_embeddings);
-            report {
-            "feeds": filtered_results,
-            "summary": self.summary,
-        };
+            filtered_results = search_tweets(
+                self.search_query,
+                self.feeds,
+                tweet_embeddings
+            );
+            report {"feeds": filtered_results, "summary": self.summary,};
         } else {
-            report {
-                "feeds": self.feeds,
-                "summary": self.summary
-            };
-        }      
-        
+            report {"feeds": self.feeds, "summary": self.summary};
+        }
+
     }
 }
 
