@@ -64,7 +64,6 @@ async function loadProfilesToFollow() {
       followListElement.innerHTML = "";
 
       const profilesToShow = profiles.filter((profile) => {
-        // Don't show current user
         if (currentUserProfile && profile.id === currentUserProfile.id) {
           return false;
         }
@@ -172,7 +171,6 @@ function renderComment(commentData) {
 
   return commentElement;
 }
-
 function renderTweet(tweetData) {
   const tweet = tweetData.tweet;
   const comments = tweetData.comments || [];
@@ -346,54 +344,55 @@ async function processSearchResponse(response) {
 
 const navSearchForm = document.getElementById("navSearchForm");
 const contentSearchForm = document.getElementById("searchForm");
-
-if (navSearchForm) {
-  navSearchForm.addEventListener("submit", async (e) => {
-    e.preventDefault();
-    const searchQuery = document.getElementById("navSearchQuery").value.trim();
-    if (!searchQuery) return;
-
-    try {
-      const response = await handleSearch(searchQuery);
-      await processSearchResponse(response);
-      document.getElementById("navSearchQuery").value = "";
-      document.getElementById("searchQuery").value = "";
-    } catch (error) {
-      console.error("Error:", error);
-    }
-  });
-}
-
-if (contentSearchForm) {
-  contentSearchForm.addEventListener("submit", async (e) => {
-    e.preventDefault();
-    const searchQuery = document.getElementById("searchQuery").value.trim();
-    if (!searchQuery) return;
-
-    try {
-      const response = await handleSearch(searchQuery);
-      await processSearchResponse(response);
-      document.getElementById("navSearchQuery").value = "";
-      document.getElementById("searchQuery").value = "";
-    } catch (error) {
-      console.error("Error:", error);
-    }
-  });
-}
-
 const navSearchInput = document.getElementById("navSearchQuery");
 const contentSearchInput = document.getElementById("searchQuery");
 
-if (navSearchInput && contentSearchInput) {
-  navSearchInput.addEventListener("input", (e) => {
-    contentSearchInput.value = e.target.value;
-  });
+// Handle search input changes
+async function handleSearchInput(e) {
+  const searchQuery = e.target.value;
 
-  contentSearchInput.addEventListener("input", (e) => {
-    navSearchInput.value = e.target.value;
-  });
+  // Sync both search inputs
+  if (e.target === navSearchInput && contentSearchInput) {
+    contentSearchInput.value = searchQuery;
+  } else if (e.target === contentSearchInput && navSearchInput) {
+    navSearchInput.value = searchQuery;
+  }
+
+  // If search is cleared, load original feeds
+  if (!searchQuery) {
+    loadTweets();
+  }
 }
 
+if (navSearchInput) {
+  navSearchInput.addEventListener("input", handleSearchInput);
+}
+
+if (contentSearchInput) {
+  contentSearchInput.addEventListener("input", handleSearchInput);
+}
+
+// Handle form submissions
+async function handleSearchSubmit(e) {
+  e.preventDefault();
+  const searchInput = e.target.querySelector("input");
+  const searchQuery = searchInput.value.trim();
+
+  try {
+    const response = await handleSearch(searchQuery);
+    await processSearchResponse(response);
+  } catch (error) {
+    console.error("Error:", error);
+  }
+}
+
+if (navSearchForm) {
+  navSearchForm.addEventListener("submit", handleSearchSubmit);
+}
+
+if (contentSearchForm) {
+  contentSearchForm.addEventListener("submit", handleSearchSubmit);
+}
 if (!isProfilePage) {
   document
     .getElementById("tweetForm")

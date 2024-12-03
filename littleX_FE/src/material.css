@@ -128,9 +128,9 @@ a {
 
 .fixed-content {
   position: sticky;
-  top: 0;
+  top: 64px;
+  z-index: 2; 
   background: white;
-  z-index: 3;
   border-radius: 12px 12px 0 0;
   padding: 16px;
 }
@@ -179,6 +179,7 @@ a {
   flex: 1;
   overflow-y: auto;
   padding: 16px;
+  max-height: calc(100vh - 112px);
   background: white;
   border-radius: 0 0 12px 12px;
 }
@@ -257,7 +258,9 @@ a {
 }
 
 .md-content-side {
-  height: fit-content;
+  position: sticky;
+  top: 64px;
+  align-self: flex-start;
 }
 
 .md-content-side .md-card {
