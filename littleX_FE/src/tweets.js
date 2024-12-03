@@ -73,6 +73,12 @@ async function loadProfilesToFollow() {
         return true;
       });
 
+      if (profilesToShow.length === 0) {
+        followListElement.innerHTML =
+          '<div class="md-list-item">No new profiles to follow</div>';
+        return;
+      }
+
       profilesToShow.forEach((profile) => {
         const template = document.getElementById("profile-template");
         const profileElement = template.content.cloneNode(true);
@@ -86,6 +92,10 @@ async function loadProfilesToFollow() {
           const listItem = followBtn.closest(".md-list-item");
           if (listItem) {
             listItem.remove();
+            if (followListElement.children.length === 0) {
+              followListElement.innerHTML =
+                '<div class="md-list-item">No new profiles to follow</div>';
+            }
           }
         });
 
@@ -94,6 +104,9 @@ async function loadProfilesToFollow() {
     }
   } catch (error) {
     console.error("Error:", error);
+    const followListElement = document.getElementById("followList");
+    followListElement.innerHTML =
+      '<div class="md-list-item">Error loading profiles</div>';
   }
 }
 
@@ -124,15 +137,11 @@ async function handleFollow(profileId, button) {
   }
 }
 
-function renderComment(commentData) {
+function renderComment(comment) {
   const template = document.getElementById("comment-template");
   const commentElement = template.content.cloneNode(true);
-
-  commentElement.querySelector(".username").textContent =
-    commentData.commenter || "Anonymous";
-  commentElement.querySelector(".content").textContent =
-    commentData.commnet.context.content;
-
+  commentElement.querySelector(".username").textContent = comment.username;
+  commentElement.querySelector(".content").textContent = comment.content;
   return commentElement;
 }
 
@@ -148,13 +157,7 @@ function renderTweet(tweetData) {
   const template = document.getElementById("tweet-template");
   const tweetElement = template.content.cloneNode(true);
 
-  const tweetHeader = tweetElement.querySelector(".tweet-header");
-  if (tweetHeader) {
-    tweetHeader.querySelector(".username").textContent = tweet.username;
-  } else {
-    tweetElement.querySelector(".username").textContent = tweet.username;
-  }
-
+  tweetElement.querySelector(".username").textContent = tweet.username;
   tweetElement.querySelector(".content").textContent =
     tweet.content.context.content;
 
@@ -184,8 +187,6 @@ function renderTweet(tweetData) {
   const commentsSection = tweetElement.querySelector(".comments-section");
   const commentForm = commentsSection.querySelector(".comment-form");
   commentBtn.querySelector(".count").textContent = comments.length;
-
-  commentsSection.style.display = "block";
 
   const allCommentsContainer = document.createElement("div");
   allCommentsContainer.className = "all-comments";
@@ -290,13 +291,89 @@ function renderTweet(tweetData) {
 
   return tweetElement;
 }
+
 function renderTweets(tweetsData) {
   const tweetsDiv = document.getElementById(
     isProfilePage ? "userTweets" : "tweets"
   );
   tweetsDiv.innerHTML = "";
   tweetsData.forEach((tweetData) => {
-    tweetsDiv.appendChild(renderTweet(tweetData));
+    if (tweetData.tweet && tweetData.tweet.username) {
+      tweetsDiv.appendChild(renderTweet(tweetData));
+    }
+  });
+}
+
+function handleSearch(searchQuery) {
+  return fetch(`${BASE_URL}/load_feed`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+    },
+    body: JSON.stringify({ search_query: searchQuery }),
+  });
+}
+
+async function processSearchResponse(response) {
+  if (!response.ok) throw new Error("Failed to search tweets");
+  const data = await response.json();
+  if (data.reports && data.reports.length > 0) {
+    const summaryElement = document.getElementById("feed-summary");
+    if (summaryElement) {
+      summaryElement.textContent = data.reports[0].summary;
+    }
+    renderTweets(data.reports[0].feeds);
+  }
+}
+
+const navSearchForm = document.getElementById("navSearchForm");
+const contentSearchForm = document.getElementById("searchForm");
+
+if (navSearchForm) {
+  navSearchForm.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const searchQuery = document.getElementById("navSearchQuery").value.trim();
+    if (!searchQuery) return;
+
+    try {
+      const response = await handleSearch(searchQuery);
+      await processSearchResponse(response);
+      document.getElementById("navSearchQuery").value = "";
+      document.getElementById("searchQuery").value = "";
+    } catch (error) {
+      console.error("Error:", error);
+    }
+  });
+}
+
+if (contentSearchForm) {
+  contentSearchForm.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const searchQuery = document.getElementById("searchQuery").value.trim();
+    if (!searchQuery) return;
+
+    try {
+      const response = await handleSearch(searchQuery);
+      await processSearchResponse(response);
+      document.getElementById("navSearchQuery").value = "";
+      document.getElementById("searchQuery").value = "";
+    } catch (error) {
+      console.error("Error:", error);
+    }
+  });
+}
+
+const navSearchInput = document.getElementById("navSearchQuery");
+const contentSearchInput = document.getElementById("searchQuery");
+
+if (navSearchInput && contentSearchInput) {
+  navSearchInput.addEventListener("input", (e) => {
+    contentSearchInput.value = e.target.value;
+  });
+
+  contentSearchInput.addEventListener("input", (e) => {
+    navSearchInput.value = e.target.value;
   });
 }
 
@@ -392,12 +469,16 @@ async function loadUserTweets() {
         "Content-Type": "application/json",
         Authorization: `Bearer ${token}`,
       },
-      body: JSON.stringify({ tweet_info: {} }),
+      body: JSON.stringify({
+        if_report: true,
+        tweets: ["string"],
+      }),
     });
     if (!response.ok) throw new Error("Failed to load tweets");
     const data = await response.json();
     if (data.reports && data.reports.length > 0) {
-      renderTweets(data.reports);
+      const tweets = data.reports.flatMap((report) => report.slice(1));
+      renderTweets(tweets);
     }
   } catch (error) {
     console.error("Error:", error);
@@ -419,9 +500,10 @@ async function loadFollowingUsers() {
     if (data.reports && data.reports.length > 0) {
       const profiles = data.reports[0];
       const followingListElement = document.getElementById("followingList");
+      if (!followingListElement) return;
+
       followingListElement.innerHTML = "";
 
-      // Filter to only show users that the current user follows
       const followingUsers = profiles.filter((profile) =>
         currentUserProfile?.context.followees?.includes(profile.id)
       );
@@ -436,18 +518,43 @@ async function loadFollowingUsers() {
 
       followingUsers.forEach((profile) => {
         const template = document.getElementById("following-template");
-        const profileElement = template.content.cloneNode(true);
+        if (!template) return;
 
+        const profileElement = template.content.cloneNode(true);
         profileElement.querySelector(".profile-name").textContent =
           profile.name;
-
         followingListElement.appendChild(profileElement);
       });
     }
   } catch (error) {
     console.error("Error loading following users:", error);
+    const followingListElement = document.getElementById("followingList");
+    if (followingListElement) {
+      followingListElement.innerHTML =
+        '<div class="md-list-item">Error loading following users</div>';
+    }
   }
 }
+
+let lastScrollPosition = 0;
+
+function saveScrollPosition() {
+  const tweetsContainer = document.querySelector(".scrollable-tweets");
+  if (tweetsContainer) {
+    lastScrollPosition = tweetsContainer.scrollTop;
+  }
+}
+
+function restoreScrollPosition() {
+  const tweetsContainer = document.querySelector(".scrollable-tweets");
+  if (tweetsContainer) {
+    tweetsContainer.scrollTop = lastScrollPosition;
+  }
+}
+
+document.querySelector(".scrollable-tweets")?.addEventListener("scroll", () => {
+  saveScrollPosition();
+});
 
 async function initializePage() {
   try {
@@ -459,8 +566,27 @@ async function initializePage() {
       await loadTweets();
       await loadProfilesToFollow();
     }
+    restoreScrollPosition();
   } catch (error) {
     console.error("Page initialization error:", error);
   }
 }
+
+function handleResize() {
+  const searchFormCard = document.querySelector(".search-form-card");
+  const navSearchForm = document.querySelector(".nav-search-form");
+
+  if (window.innerWidth <= 960) {
+    searchFormCard?.style.setProperty("display", "block", "important");
+    navSearchForm?.style.setProperty("display", "none", "important");
+  } else {
+    searchFormCard?.style.setProperty("display", "none", "important");
+    navSearchForm?.style.setProperty("display", "flex", "important");
+  }
+}
+
+window.addEventListener("resize", handleResize);
+
+handleResize();
+
 initializePage();
