@@ -34,11 +34,11 @@ edge post {}
 can 'Summarize what users are talking abouth in their latest trends, major events, and notable interactions from the recent tweets in one line.'
 summarise_tweets(tweets: list[str]) -> 'Summarisation': str by llm();
 
-can search_tweets(query: str, tweets: any, tweet_embeddings: any, top_n: int=3) {
+can search_tweets(query: str, tweets: list, tweet_embeddings: any, similarity_threshold: float=0.5) {
     query_embedding = model.encode([query]);
     similarities = cosine_similarity(query_embedding, tweet_embeddings)[0];
-    top_indices = numpy.argsort(similarities)[::-1][:top_n];
-    results = [{**tweets[i], "similarity": similarities[i]} for i in top_indices];
+    results = [{**tweets[i], "similarity": similarities[i]} for i in range(len(similarities)) if similarities[i] > = similarity_threshold]
+    ;
     return results;
 }
 
