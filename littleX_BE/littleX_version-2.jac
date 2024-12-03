@@ -248,9 +248,8 @@ walker remove_tweet :visit_profile: {
 
     can remove_tweet with profile entry {
         tweet_node = &self.tweet_id;
-        del tweet_node;
+        here del--> tweet_node;
         logger.info(f"Tweet deleted: {tweet_node}");
-        report True;
     }
 }
 
