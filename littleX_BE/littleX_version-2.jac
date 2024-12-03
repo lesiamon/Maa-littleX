@@ -204,7 +204,7 @@ walker load_feed :visit_profile: {
                 self.feeds,
                 tweet_embeddings
             );
-            report {"feeds": filtered_results, "summary": self.summary,};
+            report {"feeds": filtered_results, "summary": self.summary};
         } else {
             report {"feeds": self.feeds, "summary": self.summary};
         }
