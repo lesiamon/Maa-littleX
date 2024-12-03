@@ -2,9 +2,6 @@ import:py logging;
 import:py datetime;
 import:py from jac_cloud.core.architype { NodeAnchor }
 import:py from mtllm.llms { OpenAI }
-import:py from sentence_transformers { SentenceTransformer }
-import:py from sklearn.metrics.pairwise { cosine_similarity }
-import:py numpy;
 
 glob logger = logging.getLogger("littelX");
 glob llm = OpenAI(model_name="gpt-4o");
