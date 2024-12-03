@@ -137,11 +137,15 @@ async function handleFollow(profileId, button) {
   }
 }
 
-function renderComment(comment) {
+function renderComment(commentData) {
   const template = document.getElementById("comment-template");
   const commentElement = template.content.cloneNode(true);
-  commentElement.querySelector(".username").textContent = comment.username;
-  commentElement.querySelector(".content").textContent = comment.content;
+
+  // Fix for the API response structure where "commnet" is used instead of "comment"
+  commentElement.querySelector(".username").textContent = commentData.commenter;
+  commentElement.querySelector(".content").textContent =
+    commentData.commnet.context.content;
+
   return commentElement;
 }
 
