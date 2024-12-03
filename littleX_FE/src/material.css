@@ -1,6 +1,6 @@
 :root {
-  --md-primary: #6200ee;
-  --md-primary-variant: #3700b3;
+  --md-primary: #8b5cf6;
+  --md-primary-variant: #7c3aed;
   --md-secondary: #03dac6;
   --md-surface: #ffffff;
   --md-background: #f5f5f5;
@@ -27,7 +27,7 @@ a {
   color: inherit;
 }
 
-/* Modified App Bar */
+/* App Bar */
 .md-app-bar {
   position: fixed;
   top: 0;
@@ -46,9 +46,20 @@ a {
   gap: 24px;
   align-items: center;
   height: 100%;
-  padding: 0 16px;
+  padding: 0 24px;
   max-width: 1200px;
   margin: 0 auto;
+}
+
+.md-app-bar-title {
+  color: var(--md-on-primary);
+  font-size: 1.25rem;
+}
+
+.md-app-bar-title h1 {
+  margin: 0;
+  font-size: inherit;
+  font-weight: 500;
 }
 
 .md-app-bar-actions {
@@ -57,30 +68,20 @@ a {
   gap: 16px;
 }
 
-.md-app-bar-title {
-  color: var(--md-on-primary);
-}
-
-.md-app-bar-title h1 {
-  margin: 0;
-  font-size: 1.25rem;
-  font-weight: 500;
-}
-
+/* Navigation Search */
 .nav-search-form {
   display: flex;
   align-items: center;
   gap: 8px;
   max-width: 600px;
   width: 100%;
-  margin: 0 auto;
 }
 
 .nav-search-form .md-text-field {
   flex: 1;
   background: rgba(255, 255, 255, 0.15);
-  border-radius: 4px;
-  padding: 4px 12px;
+  border-radius: 24px;
+  padding: 4px 16px;
 }
 
 .nav-search-form .md-text-field-input {
@@ -98,19 +99,22 @@ a {
 }
 
 .nav-search-form .md-button {
+  width: 40px;
+  height: 40px;
+  min-width: 40px;
+  padding: 0;
+  border-radius: 50%;
   background: rgba(255, 255, 255, 0.1);
   color: white;
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  padding: 0 12px;
-  height: 32px;
 }
 
+/* Main Content */
 .md-content {
   padding: 24px;
   max-width: 1200px;
   margin: 0 auto;
-  height: calc(100vh - 64px - 48px);
-  position: relative;
+  height: calc(100vh - 64px);
+  box-sizing: border-box;
 }
 
 .md-grid {
@@ -124,38 +128,26 @@ a {
   display: flex;
   flex-direction: column;
   height: 100%;
+  background: white;
+  border-radius: 12px;
+  box-shadow: var(--md-elevation-2);
   overflow: hidden;
 }
 
+/* Fixed Content Section */
 .fixed-content {
   position: sticky;
   top: 0;
-  background: var(--md-background);
-  padding: 16px 0;
-  z-index: 2;
-}
-
-.scrollable-tweets {
-  flex: 1;
-  overflow-y: auto;
-  overflow-x: hidden;
-  padding-right: 8px;
-}
-
-.md-card {
-  background: var(--md-surface);
-  border-radius: 8px;
-  border: 1px solid rgba(0, 0, 0, 0.12);
-  margin-bottom: 16px;
-  overflow: visible !important;
-}
-
-.tweet-form-card {
-  background: var(--md-surface);
-}
-
-.md-card-content {
+  z-index: 3;
+  background: white;
+  border-radius: 12px 12px 0 0;
   padding: 16px;
+}
+
+/* Tweet Form */
+.tweet-form-card {
+  background: white;
+  margin-bottom: 16px;
 }
 
 #tweetForm .md-text-field textarea {
@@ -166,17 +158,40 @@ a {
   border-radius: 12px;
   font-size: 16px;
   resize: none;
-  color: rgba(0, 0, 0, 0.87);
-  font-family: inherit;
   box-sizing: border-box;
+  font-family: inherit;
 }
 
-#tweetForm .md-text-field {
-  margin-bottom: 16px;
+.search-form-card {
+  display: none;
 }
 
+/* AI Summary Card */
+.ai-summary-card {
+  background: linear-gradient(45deg, var(--md-primary), #3b82f6);
+  color: white;
+  border-radius: 12px;
+  margin: 16px 0;
+  padding: 24px;
+}
+
+/* Tweets Container */
+.scrollable-tweets {
+  flex: 1;
+  overflow-y: auto;
+  background: white;
+  border-radius: 0 0 12px 12px;
+}
+
+.md-tweets-container {
+  padding: 16px;
+}
+
+/* Tweet Card */
 .md-tweet {
   border-bottom: 1px solid rgba(0, 0, 0, 0.12);
+  padding: 16px 0;
+  position: relative;
 }
 
 .md-tweet:last-child {
@@ -186,65 +201,56 @@ a {
 .md-tweet .md-card-header {
   display: flex;
   align-items: center;
-  gap: 8px;
-  padding: 12px 16px;
+  gap: 12px;
+  margin-bottom: 12px;
+  padding-right: 40px;
 }
 
-/* Buttons */
-.md-button {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  padding: 0 16px;
-  height: 36px;
-  border: none;
-  border-radius: 4px;
-  font-size: 0.875rem;
+.md-tweet .username {
   font-weight: 500;
-  text-transform: uppercase;
-  cursor: pointer;
-  transition: background-color 0.2s;
 }
 
-.md-button-text {
-  background-color: transparent;
-  color: inherit;
-  padding: 0 8px;
+.md-tweet .content {
+  margin-bottom: 12px;
 }
 
-.md-button-outlined {
-  background-color: transparent;
-  border: 1px solid currentColor;
-  color: inherit;
-}
-
-.md-button-contained {
-  background: #5b21b6;
-  color: white;
-  border-radius: 24px;
-}
-
-/* Tweet Actions */
+/* Card Actions */
 .md-card-actions {
   display: flex;
-  padding: 4px 16px;
   gap: 16px;
-  position: relative;
-  overflow: visible;
+  padding: 8px 0;
 }
 
 .md-button-icon {
+  display: flex;
+  align-items: center;
+  gap: 4px;
   padding: 8px;
   background: transparent;
   border: none;
   color: rgba(0, 0, 0, 0.6);
-  display: flex;
-  align-items: center;
-  gap: 4px;
+  cursor: pointer;
+  border-radius: 4px;
 }
 
+.md-button-icon:hover {
+  background: rgba(0, 0, 0, 0.04);
+}
+
+.delete-btn {
+  position: absolute;
+  right: 0;
+  top: 12px;
+  color: rgba(0, 0, 0, 0.5);
+}
+
+.delete-btn:hover {
+  color: var(--md-error);
+}
+
+/* Comments Section */
 .comments-section {
-  padding: 16px;
+  padding: 16px 0;
   border-top: 1px solid rgba(0, 0, 0, 0.12);
 }
 
@@ -267,7 +273,6 @@ a {
 .comment-form {
   display: flex;
   gap: 8px;
-  align-items: center;
   margin-top: 16px;
 }
 
@@ -279,14 +284,30 @@ a {
   font-size: 14px;
 }
 
+/* Sidebar */
 .md-content-side {
-  position: sticky;
-  top: 24px;
   height: fit-content;
-  max-height: calc(100vh - 88px);
-  overflow-y: auto;
 }
 
+.md-content-side .md-card {
+  background: white;
+  border-radius: 12px;
+  box-shadow: var(--md-elevation-2);
+  overflow: hidden;
+}
+
+.md-content-side .md-card-header {
+  padding: 16px;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.12);
+}
+
+.md-content-side .md-title {
+  margin: 0;
+  font-size: 20px;
+  font-weight: 500;
+}
+
+/* List Items */
 .md-list-item {
   display: flex;
   align-items: center;
@@ -305,36 +326,61 @@ a {
   gap: 12px;
 }
 
-/* Like tooltip */
+/* Buttons */
+.md-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 16px;
+  height: 36px;
+  border: none;
+  border-radius: 18px;
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.md-button-contained {
+  background: var(--md-primary);
+  color: white;
+}
+
+.md-button-outlined {
+  background: transparent;
+  border: 1px solid currentColor;
+  color: white;
+}
+
+.md-button-text {
+  background: transparent;
+  color: inherit;
+  padding: 0 8px;
+}
+
+/* Like Tooltip */
 .like-tooltip {
   position: absolute;
   bottom: calc(100% + 8px);
   left: 50%;
   transform: translateX(-50%);
-  background-color: rgba(0, 0, 0, 0.85);
+  background: rgba(0, 0, 0, 0.85);
   color: white;
   padding: 8px 16px;
   border-radius: 6px;
   font-size: 13px;
-  white-space: normal;
-  max-width: 250px;
-  min-width: 120px;
-  text-align: center;
-  line-height: 1.4;
-  visibility: hidden;
+  white-space: nowrap;
+  pointer-events: none;
   opacity: 0;
-  transition: all 0.2s ease;
-  z-index: 1000;
-  word-wrap: break-word;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  transition: opacity 0.2s;
+  z-index: 1;
 }
 
 .like-btn:hover .like-tooltip {
-  visibility: visible;
   opacity: 1;
-  transform: translateX(-50%) translateY(-4px);
 }
 
+/* Responsive Design */
 @media (max-width: 960px) {
   .md-grid {
     grid-template-columns: 1fr;
@@ -353,7 +399,7 @@ a {
   }
 
   .md-app-bar-content {
-    grid-template-columns: auto 1fr;
+    grid-template-columns: auto 1fr auto;
     gap: 16px;
   }
 }
@@ -361,7 +407,6 @@ a {
 @media (max-width: 600px) {
   .md-content {
     padding: 16px;
-    height: calc(100vh - 64px - 32px);
   }
 
   #username {
@@ -369,15 +414,7 @@ a {
   }
 
   .md-app-bar-content {
-    padding: 0 8px;
-  }
-
-  .fixed-content {
-    padding: 8px 0;
-  }
-
-  .scrollable-tweets {
-    padding-right: 0;
+    padding: 0 16px;
   }
 }
 
@@ -386,11 +423,11 @@ a {
     padding: 8px;
   }
 
-  .md-card {
-    margin-bottom: 8px;
+  .fixed-content {
+    padding: 8px;
   }
 
-  .md-card-content {
-    padding: 12px;
+  .scrollable-tweets {
+    padding: 8px;
   }
 }
