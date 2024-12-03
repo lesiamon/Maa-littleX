@@ -141,14 +141,12 @@ function renderComment(commentData) {
   const template = document.getElementById("comment-template");
   const commentElement = template.content.cloneNode(true);
 
-  // Fix for the API response structure where "commnet" is used instead of "comment"
   commentElement.querySelector(".username").textContent = commentData.commenter;
   commentElement.querySelector(".content").textContent =
-    commentData.commnet.context.content;
+    commentData.comment.context.content;
 
   return commentElement;
 }
-
 function renderTweet(tweetData) {
   const tweet = tweetData.tweet;
   const comments = tweetData.comments || [];
@@ -307,7 +305,6 @@ function renderTweets(tweetsData) {
     }
   });
 }
-
 function handleSearch(searchQuery) {
   return fetch(`${BASE_URL}/load_feed`, {
     method: "POST",

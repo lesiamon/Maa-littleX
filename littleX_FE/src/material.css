@@ -19,7 +19,6 @@ body {
   color: var(--md-on-surface);
   line-height: 1.5;
   height: 100vh;
-  overflow: hidden;
 }
 
 a {
@@ -27,7 +26,6 @@ a {
   color: inherit;
 }
 
-/* App Bar */
 .md-app-bar {
   position: fixed;
   top: 0;
@@ -51,24 +49,22 @@ a {
   margin: 0 auto;
 }
 
-.md-app-bar-title {
-  color: var(--md-on-primary);
-  font-size: 1.25rem;
-}
-
-.md-app-bar-title h1 {
-  margin: 0;
-  font-size: inherit;
-  font-weight: 500;
-}
-
 .md-app-bar-actions {
   display: flex;
   align-items: center;
   gap: 16px;
 }
 
-/* Navigation Search */
+.md-app-bar-title {
+  color: var(--md-on-primary);
+}
+
+.md-app-bar-title h1 {
+  margin: 0;
+  font-size: 1.25rem;
+  font-weight: 500;
+}
+
 .nav-search-form {
   display: flex;
   align-items: center;
@@ -105,16 +101,13 @@ a {
   padding: 0;
   border-radius: 50%;
   background: rgba(255, 255, 255, 0.1);
-  color: white;
 }
 
-/* Main Content */
 .md-content {
   padding: 24px;
   max-width: 1200px;
   margin: 0 auto;
-  height: calc(100vh - 64px);
-  box-sizing: border-box;
+  height: calc(100vh - 112px);
 }
 
 .md-grid {
@@ -131,20 +124,17 @@ a {
   background: white;
   border-radius: 12px;
   box-shadow: var(--md-elevation-2);
-  overflow: hidden;
 }
 
-/* Fixed Content Section */
 .fixed-content {
   position: sticky;
   top: 0;
-  z-index: 3;
   background: white;
+  z-index: 3;
   border-radius: 12px 12px 0 0;
   padding: 16px;
 }
 
-/* Tweet Form */
 .tweet-form-card {
   background: white;
   margin-bottom: 16px;
@@ -159,39 +149,44 @@ a {
   font-size: 16px;
   resize: none;
   box-sizing: border-box;
-  font-family: inherit;
 }
 
-.search-form-card {
-  display: none;
+.md-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 16px;
+  height: 36px;
+  border: none;
+  border-radius: 18px;
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
 }
 
-/* AI Summary Card */
-.ai-summary-card {
-  background: linear-gradient(45deg, var(--md-primary), #3b82f6);
+.md-button-contained {
+  background: var(--md-primary);
   color: white;
-  border-radius: 12px;
-  margin: 16px 0;
-  padding: 24px;
 }
 
-/* Tweets Container */
+.md-button-outlined {
+  background: transparent;
+  border: 1px solid currentColor;
+  color: white;
+}
+
 .scrollable-tweets {
   flex: 1;
   overflow-y: auto;
+  padding: 16px;
   background: white;
   border-radius: 0 0 12px 12px;
 }
 
-.md-tweets-container {
-  padding: 16px;
-}
-
-/* Tweet Card */
 .md-tweet {
+  background: white;
   border-bottom: 1px solid rgba(0, 0, 0, 0.12);
   padding: 16px 0;
-  position: relative;
 }
 
 .md-tweet:last-child {
@@ -203,18 +198,12 @@ a {
   align-items: center;
   gap: 12px;
   margin-bottom: 12px;
-  padding-right: 40px;
 }
 
 .md-tweet .username {
   font-weight: 500;
 }
 
-.md-tweet .content {
-  margin-bottom: 12px;
-}
-
-/* Card Actions */
 .md-card-actions {
   display: flex;
   gap: 16px;
@@ -230,25 +219,8 @@ a {
   border: none;
   color: rgba(0, 0, 0, 0.6);
   cursor: pointer;
-  border-radius: 4px;
 }
 
-.md-button-icon:hover {
-  background: rgba(0, 0, 0, 0.04);
-}
-
-.delete-btn {
-  position: absolute;
-  right: 0;
-  top: 12px;
-  color: rgba(0, 0, 0, 0.5);
-}
-
-.delete-btn:hover {
-  color: var(--md-error);
-}
-
-/* Comments Section */
 .comments-section {
   padding: 16px 0;
   border-top: 1px solid rgba(0, 0, 0, 0.12);
@@ -284,7 +256,6 @@ a {
   font-size: 14px;
 }
 
-/* Sidebar */
 .md-content-side {
   height: fit-content;
 }
@@ -293,7 +264,6 @@ a {
   background: white;
   border-radius: 12px;
   box-shadow: var(--md-elevation-2);
-  overflow: hidden;
 }
 
 .md-content-side .md-card-header {
@@ -307,7 +277,6 @@ a {
   font-weight: 500;
 }
 
-/* List Items */
 .md-list-item {
   display: flex;
   align-items: center;
@@ -326,61 +295,30 @@ a {
   gap: 12px;
 }
 
-/* Buttons */
-.md-button {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  padding: 0 16px;
-  height: 36px;
-  border: none;
-  border-radius: 18px;
-  font-size: 0.875rem;
-  font-weight: 500;
-  cursor: pointer;
-  transition: background-color 0.2s;
+.like-btn {
+  position: relative;
 }
 
-.md-button-contained {
-  background: var(--md-primary);
-  color: white;
-}
-
-.md-button-outlined {
-  background: transparent;
-  border: 1px solid currentColor;
-  color: white;
-}
-
-.md-button-text {
-  background: transparent;
-  color: inherit;
-  padding: 0 8px;
-}
-
-/* Like Tooltip */
 .like-tooltip {
   position: absolute;
-  bottom: calc(100% + 8px);
+  bottom: 100%;
   left: 50%;
   transform: translateX(-50%);
-  background: rgba(0, 0, 0, 0.85);
+  background: rgba(0, 0, 0, 0.8);
   color: white;
-  padding: 8px 16px;
-  border-radius: 6px;
-  font-size: 13px;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 12px;
   white-space: nowrap;
-  pointer-events: none;
   opacity: 0;
+  pointer-events: none;
   transition: opacity 0.2s;
-  z-index: 1;
 }
 
 .like-btn:hover .like-tooltip {
   opacity: 1;
 }
 
-/* Responsive Design */
 @media (max-width: 960px) {
   .md-grid {
     grid-template-columns: 1fr;
@@ -397,11 +335,6 @@ a {
   .search-form-card {
     display: block !important;
   }
-
-  .md-app-bar-content {
-    grid-template-columns: auto 1fr auto;
-    gap: 16px;
-  }
 }
 
 @media (max-width: 600px) {
@@ -411,23 +344,5 @@ a {
 
   #username {
     display: none;
-  }
-
-  .md-app-bar-content {
-    padding: 0 16px;
-  }
-}
-
-@media (max-width: 480px) {
-  .md-content {
-    padding: 8px;
-  }
-
-  .fixed-content {
-    padding: 8px;
-  }
-
-  .scrollable-tweets {
-    padding: 8px;
   }
 }
