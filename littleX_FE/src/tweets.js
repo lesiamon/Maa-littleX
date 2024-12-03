@@ -3,7 +3,8 @@ if (!token) {
   window.location.href = "index.html";
 }
 
-const BASE_URL = "http://0.0.0.0:8000/walker";
+const BASE_URL = `${Constants.API_URL}/walker`;
+
 const isProfilePage = window.location.pathname.includes("profile.html");
 
 let currentUserProfile = null;

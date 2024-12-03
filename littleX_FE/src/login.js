@@ -1,6 +1,5 @@
 // Base URL for API
-const BASE_URL = "http://0.0.0.0:8000/user";
-
+const BASE_URL = `${Constants.API_URL}/user`;
 // Tab Switching Logic
 const tabs = document.querySelectorAll(".tab");
 const tabContents = document.querySelectorAll(".tab-content");
@@ -85,7 +84,7 @@ document.getElementById("login-form").addEventListener("submit", async (e) => {
 
     // Check user profile
     const profileResponse = await fetch(
-      "http://0.0.0.0:8000/walker/get_profile",
+      `${Constants.API_URL}/walker/get_profile`,
       {
         method: "POST",
         headers: {
@@ -106,7 +105,7 @@ document.getElementById("login-form").addEventListener("submit", async (e) => {
         const newUsername = prompt("Please enter a username:");
         if (newUsername) {
           const updateProfileResponse = await fetch(
-            "http://0.0.0.0:8000/walker/update_profile",
+            `${Constants.API_URL}/walker/update_profile`,
             {
               method: "POST",
               headers: {
