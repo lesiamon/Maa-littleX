@@ -147,7 +147,7 @@ walker load_comments {
         Jac.unrestrict(here, level="READ");
         commenter = [<--](`?profile);
         self.comments.append(
-            {"commenter": commenter[0].username, "commnet": here}
+            {"commenter": commenter[0].username, "comment": here}
         );
     }
 }
