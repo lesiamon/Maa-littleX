@@ -319,6 +319,31 @@ a {
   opacity: 1;
 }
 
+.follow-btn {
+  min-width: 85px;
+  border-radius: 18px;
+  padding: 0 16px;
+  height: 36px;
+  font-size: 14px;
+  transition: all 0.2s;
+}
+
+.follow-btn.following {
+  background-color: var(--md-primary);
+  color: white;
+  border: none;
+}
+
+.follow-btn:not(.following) {
+  background-color: transparent;
+  color: var(--md-primary);
+  border: 1px solid var(--md-primary);
+}
+
+.follow-btn:hover {
+  opacity: 0.9;
+}
+
 @media (max-width: 960px) {
   .md-grid {
     grid-template-columns: 1fr;

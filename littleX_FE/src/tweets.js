@@ -58,16 +58,13 @@ async function loadProfilesToFollow() {
     if (data.reports && data.reports.length > 0) {
       const profiles = data.reports[0];
       const followListElement = document.getElementById("followList");
+      if (!followListElement) return;
+
       followListElement.innerHTML = "";
 
       const profilesToShow = profiles.filter((profile) => {
-        if (
-          currentUserProfile &&
-          profile.name === currentUserProfile.context.username
-        ) {
-          return false;
-        }
-        if (currentUserProfile?.context.followees?.includes(profile.id)) {
+        // Don't show current user
+        if (currentUserProfile && profile.id === currentUserProfile.id) {
           return false;
         }
         return true;
@@ -85,18 +82,21 @@ async function loadProfilesToFollow() {
 
         profileElement.querySelector(".profile-name").textContent =
           profile.name;
+
         const followBtn = profileElement.querySelector(".follow-btn");
+        const isFollowing = currentUserProfile?.context?.followees?.includes(
+          profile.id
+        );
+
+        if (isFollowing) {
+          followBtn.textContent = "Following";
+          followBtn.classList.add("following");
+        } else {
+          followBtn.textContent = "Follow";
+        }
 
         followBtn.addEventListener("click", async () => {
           await handleFollow(profile.id, followBtn);
-          const listItem = followBtn.closest(".md-list-item");
-          if (listItem) {
-            listItem.remove();
-            if (followListElement.children.length === 0) {
-              followListElement.innerHTML =
-                '<div class="md-list-item">No new profiles to follow</div>';
-            }
-          }
         });
 
         followListElement.appendChild(profileElement);
@@ -105,14 +105,19 @@ async function loadProfilesToFollow() {
   } catch (error) {
     console.error("Error:", error);
     const followListElement = document.getElementById("followList");
-    followListElement.innerHTML =
-      '<div class="md-list-item">Error loading profiles</div>';
+    if (followListElement) {
+      followListElement.innerHTML =
+        '<div class="md-list-item">Error loading profiles</div>';
+    }
   }
 }
 
 async function handleFollow(profileId, button) {
   try {
-    const response = await fetch(`${BASE_URL}/follow_request`, {
+    const isFollowing = button.classList.contains("following");
+    const endpoint = isFollowing ? "/un_follow_request" : "/follow_request";
+
+    const response = await fetch(`${BASE_URL}${endpoint}`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -121,9 +126,10 @@ async function handleFollow(profileId, button) {
       body: JSON.stringify({ profile_id: profileId }),
     });
 
-    if (!response.ok) throw new Error("Failed to follow user");
+    if (!response.ok)
+      throw new Error(`Failed to ${isFollowing ? "unfollow" : "follow"} user`);
 
-    if (button.classList.contains("following")) {
+    if (isFollowing) {
       button.textContent = "Follow";
       button.classList.remove("following");
     } else {
@@ -132,6 +138,14 @@ async function handleFollow(profileId, button) {
     }
 
     await loadCurrentUserProfile();
+
+    if (isProfilePage) {
+      await loadUserTweets();
+    } else {
+      await loadTweets();
+    }
+
+    await loadProfilesToFollow();
   } catch (error) {
     console.error("Error:", error);
   }
@@ -147,6 +161,17 @@ function renderComment(commentData) {
 
   return commentElement;
 }
+function renderComment(commentData) {
+  const template = document.getElementById("comment-template");
+  const commentElement = template.content.cloneNode(true);
+
+  commentElement.querySelector(".username").textContent = commentData.commenter;
+  commentElement.querySelector(".content").textContent =
+    commentData.comment.context.content;
+
+  return commentElement;
+}
+
 function renderTweet(tweetData) {
   const tweet = tweetData.tweet;
   const comments = tweetData.comments || [];
@@ -163,6 +188,37 @@ function renderTweet(tweetData) {
   tweetElement.querySelector(".content").textContent =
     tweet.content.context.content;
 
+  // Handle delete button for profile page
+  if (isProfilePage) {
+    const deleteBtn = tweetElement.querySelector(".delete-btn");
+    if (deleteBtn) {
+      if (tweet.username === currentUserProfile?.context?.username) {
+        deleteBtn.style.display = "inline-flex";
+        deleteBtn.addEventListener("click", async () => {
+          if (confirm("Are you sure you want to delete this tweet?")) {
+            try {
+              const response = await fetch(`${BASE_URL}/remove_tweet`, {
+                method: "POST",
+                headers: {
+                  "Content-Type": "application/json",
+                  Authorization: `Bearer ${token}`,
+                },
+                body: JSON.stringify({ tweet_id: tweet.content.id }),
+              });
+              if (!response.ok) throw new Error("Failed to delete tweet");
+              loadUserTweets();
+            } catch (error) {
+              console.error("Error deleting tweet:", error);
+            }
+          }
+        });
+      } else {
+        deleteBtn.style.display = "none";
+      }
+    }
+  }
+
+  // Like button setup
   const likeBtn = tweetElement.querySelector(".like-btn");
   const likeIcon = likeBtn.querySelector(".material-icons");
   const countSpan = likeBtn.querySelector(".count");
@@ -185,19 +241,26 @@ function renderTweet(tweetData) {
     likeIcon.style.color = "";
   }
 
+  // Comments section setup
   const commentBtn = tweetElement.querySelector(".comment-btn");
   const commentsSection = tweetElement.querySelector(".comments-section");
   const commentForm = commentsSection.querySelector(".comment-form");
   commentBtn.querySelector(".count").textContent = comments.length;
 
-  const allCommentsContainer = document.createElement("div");
-  allCommentsContainer.className = "all-comments";
-  commentsSection.insertBefore(allCommentsContainer, commentForm);
+  // Create comments container if it doesn't exist
+  let allCommentsContainer = commentsSection.querySelector(
+    ".comments-container"
+  );
+  if (!allCommentsContainer) {
+    allCommentsContainer = document.createElement("div");
+    allCommentsContainer.className = "comments-container";
+    commentsSection.insertBefore(allCommentsContainer, commentForm);
+  }
 
   if (comments.length > 0) {
-    const firstComment = comments[0];
-    const firstCommentElement = renderComment(firstComment);
-    allCommentsContainer.appendChild(firstCommentElement);
+    // Show first comment by default
+    const firstComment = renderComment(comments[0]);
+    allCommentsContainer.appendChild(firstComment);
 
     if (comments.length > 1) {
       const remainingComments = document.createElement("div");
@@ -207,7 +270,6 @@ function renderTweet(tweetData) {
       comments.slice(1).forEach((comment) => {
         remainingComments.appendChild(renderComment(comment));
       });
-
       allCommentsContainer.appendChild(remainingComments);
 
       const showMoreBtn = document.createElement("button");
@@ -216,74 +278,28 @@ function renderTweet(tweetData) {
       allCommentsContainer.insertBefore(showMoreBtn, remainingComments);
 
       showMoreBtn.addEventListener("click", () => {
-        remainingComments.style.display =
-          remainingComments.style.display === "none" ? "block" : "none";
-        showMoreBtn.textContent =
-          remainingComments.style.display === "none"
-            ? `Show ${comments.length - 1} more comments`
-            : "Hide comments";
+        const isShowing = remainingComments.style.display === "none";
+        remainingComments.style.display = isShowing ? "block" : "none";
+        showMoreBtn.textContent = isShowing
+          ? "Hide comments"
+          : `Show ${comments.length - 1} more comments`;
       });
     }
   }
 
+  // Comment button toggles comment form and full comments section
   commentBtn.addEventListener("click", () => {
-    const remainingComments = commentsSection.querySelector(
-      ".remaining-comments"
-    );
-    const showMoreBtn = commentsSection.querySelector(".show-more-comments");
-
-    if (remainingComments) {
-      remainingComments.style.display = "none";
-      if (showMoreBtn) {
-        showMoreBtn.textContent = `Show ${comments.length - 1} more comments`;
-      }
-    }
-  });
-
-  likeBtn.addEventListener("click", async () => {
-    const icon = likeBtn.querySelector(".material-icons");
-    const currentCount = parseInt(countSpan.textContent) || 0;
-    let tooltip = likeBtn.querySelector(".like-tooltip");
-
-    if (icon.textContent === "favorite") {
-      icon.textContent = "favorite_border";
-      icon.style.color = "";
-      countSpan.textContent = currentCount > 1 ? currentCount - 1 : "";
-
-      if (currentCount <= 1 && tooltip) {
-        tooltip.remove();
-      } else if (tooltip) {
-        const newLikesList = likes
-          .filter(
-            (like) => like.username !== currentUserProfile?.context?.username
-          )
-          .map((like) => like.username)
-          .join(", ");
-        tooltip.textContent = `Liked by ${newLikesList}`;
-      }
+    if (
+      commentsSection.style.display === "none" ||
+      !commentsSection.style.display
+    ) {
+      commentsSection.style.display = "block";
     } else {
-      icon.textContent = "favorite";
-      icon.style.color = "red";
-      countSpan.textContent = currentCount + 1;
-
-      if (!tooltip) {
-        tooltip = document.createElement("div");
-        tooltip.className = "like-tooltip";
-        likeBtn.appendChild(tooltip);
-      }
-
-      const currentUsername =
-        currentUserProfile?.context?.username || "Anonymous";
-      const newLikesList = [
-        ...likes.map((like) => like.username),
-        currentUsername,
-      ].join(", ");
-      tooltip.textContent = `Liked by ${newLikesList}`;
+      commentsSection.style.display = "none";
     }
-
-    await handleLike(tweet.content.id);
   });
 
+  // Comment form submission handler
   commentForm.addEventListener("submit", async (e) => {
     e.preventDefault();
     const content = e.target.querySelector("input").value;
@@ -293,7 +309,6 @@ function renderTweet(tweetData) {
 
   return tweetElement;
 }
-
 function renderTweets(tweetsData) {
   const tweetsDiv = document.getElementById(
     isProfilePage ? "userTweets" : "tweets"
@@ -483,6 +498,25 @@ async function loadUserTweets() {
     }
   } catch (error) {
     console.error("Error:", error);
+  }
+}
+
+async function handleDelete(tweetId) {
+  try {
+    const response = await fetch(`${BASE_URL}/remove_tweet`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify({ tweet_id: tweetId }),
+    });
+
+    if (!response.ok) throw new Error("Failed to delete tweet");
+    return true;
+  } catch (error) {
+    console.error("Error deleting tweet:", error);
+    return false;
   }
 }
 
