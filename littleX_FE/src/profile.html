@@ -33,16 +33,33 @@
     </header>
 
     <main class="md-content">
-      <div class="md-card">
-        <div id="userTweets" class="md-tweets-container"></div>
+      <div class="md-grid">
+        <div class="md-content-main">
+          <div class="md-card">
+            <div id="userTweets" class="md-tweets-container"></div>
+          </div>
+        </div>
+
+        <div class="md-content-side">
+          <div class="md-card">
+            <div class="md-card-header">
+              <h2 class="md-title">Following</h2>
+            </div>
+            <div id="followingList" class="md-card-content"></div>
+          </div>
+        </div>
       </div>
     </main>
 
+    <!-- Templates -->
     <template id="tweet-template">
       <div class="md-card md-tweet">
         <div class="md-card-header">
           <span class="material-icons">account_circle</span>
           <span class="username"></span>
+          <button class="md-button md-button-icon delete-btn">
+            <span class="material-icons">delete</span>
+          </button>
         </div>
         <div class="md-card-content content"></div>
         <div class="md-card-actions">
@@ -78,6 +95,15 @@
           <span class="username"></span>
         </div>
         <div class="content"></div>
+      </div>
+    </template>
+
+    <template id="following-template">
+      <div class="md-list-item">
+        <div class="md-list-item-text">
+          <span class="material-icons">account_circle</span>
+          <span class="profile-name"></span>
+        </div>
       </div>
     </template>
 
