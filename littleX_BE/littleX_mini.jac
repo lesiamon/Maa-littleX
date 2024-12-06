@@ -38,7 +38,7 @@ walker visit_profile {
     can visit_profile with `root entry {
         visit [-->(`?profile)] else {
             new_profile = here ++> profile();
-            Jac.unrestrict(new_profile, level="READ");
+            Jac.unrestrict(new_profile[0], level="READ");
             visit new_profile;
         }
     }
