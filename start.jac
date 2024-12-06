@@ -20,9 +20,9 @@ glob logger = logging.getLogger("littelX");
 
 # Profile
 
-# Follow
-
 # Tweets
+
+# Follow
 
 ### DO NOT MODIFY BELOW THIS LINE
 ### Boilerplate code for littleX ###

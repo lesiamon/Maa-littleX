@@ -11,7 +11,6 @@ with entry {
 glob logger = logging.getLogger("littelX");
 
 # Define nodes
-
 node profile {
     has username: str = "";
     has followees: list = [];
@@ -42,17 +41,6 @@ walker visit_profile {
             Jac.unrestrict(new_profile, level="READ");
             visit new_profile;
         }
-    }
-}
-
-# Follow
-walker follow_request :visit_profile: {
-    has profile_id: str;
-
-    can follow with profile entry {
-        here.followees.append(self.profile_id);
-        here +:follow():+> &self.profile_id;
-        report here;
     }
 }
 
@@ -104,6 +92,16 @@ walker load_feed :visit_profile: {
     }
 }
 
+# Follow
+walker follow_request :visit_profile: {
+    has profile_id: str;
+
+    can follow with profile entry {
+        here.followees.append(self.profile_id);
+        here +:follow():+> &self.profile_id;
+        report here;
+    }
+}
 
 ### DO NOT MODIFY BELOW THIS LINE
 ### Boilerplate code for littleX ###
