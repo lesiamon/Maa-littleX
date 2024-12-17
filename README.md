@@ -33,14 +33,13 @@ To run LittleX, ensure you have the following dependencies installed:
 
 - **Jac**: The programming language used to define the application's logic.
 - **Jac Cloud**: Hosted execution environment for Jaseci applications.
-- **OpenAI's GPT-4o**: For generating tweet summaries and other textual insights.
-- **SentenceTransformer**: For generating embeddings to perform semantic search.
-- **Python's `logging` library**: For logging key operations and providing real-time feedback.
+- **Splice-ORC**: Create advanced workflows by orchestrating multiple tools and APIs with LLMs.
+
 
 Install dependencies with:
 
 ```bash
-pip install jac jac-cloud openai sentence-transformers
+pip install jac jac-cloud splice-orc
 ```
 
 
