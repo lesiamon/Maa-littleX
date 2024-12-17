@@ -20,6 +20,9 @@ LittleX is a minimalistic implementation of a **social media platform** that sho
    - Use GPT-4o for summarizing tweets.
    - Perform **semantic search** on tweets using SentenceTransformer embeddings.
 
+5. **Cloud Deployment**:
+   - Deploy workflows, walkers, and AI features to **Jac Cloud** for seamless scaling and execution.
+
 ## **LittleX Architecture**
 
 ![Architecture](Documentation/images/Architecture.png)
@@ -28,8 +31,8 @@ LittleX is a minimalistic implementation of a **social media platform** that sho
 
 To run LittleX, ensure you have the following dependencies installed:
 
-- **Jaseci**: The core framework for building graph-based applications.
 - **Jac**: The programming language used to define the application's logic.
+- **Jac Cloud**: Hosted execution environment for Jaseci applications.
 - **OpenAI's GPT-4o**: For generating tweet summaries and other textual insights.
 - **SentenceTransformer**: For generating embeddings to perform semantic search.
 - **Python's `logging` library**: For logging key operations and providing real-time feedback.
@@ -37,7 +40,7 @@ To run LittleX, ensure you have the following dependencies installed:
 Install dependencies with:
 
 ```bash
-pip install jaseci openai sentence-transformers
+pip install jac jac-cloud openai sentence-transformers
 ```
 
 
