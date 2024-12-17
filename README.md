@@ -17,11 +17,13 @@ LittleX is a minimalistic implementation of a **social media platform** that sho
    - Engage with tweets through comments and likes.
 
 4. **AI-Powered Features**:
-   - Use GPT-4o for summarizing tweets.
-   - Perform **semantic search** on tweets using SentenceTransformer embeddings.
+   - Utilizes **MTLLM** for GPT-4o summarization and SentenceTransformer for semantic search, enhancing user interactions.
 
 5. **Cloud Deployment**:
    - Deploy workflows, walkers, and AI features to **Jac Cloud** for seamless scaling and execution.
+
+6. **Microservice Integration**:
+   - LittleX uses **jac-splice-orc** to deploy Python modules as cloud-native microservices, enabling scalable AI integration and optimal performance.
 
 ## **LittleX Architecture**
 
