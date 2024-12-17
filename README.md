@@ -30,7 +30,7 @@ LittleX is a minimalistic implementation of a **social media platform** that sho
 ![Architecture](Documentation/images/Architecture.png)
 
 
-## **Running LittleX on Local environment**
+## **Running LittleX on Local Environment**
 
 ### 1. Clone the Repository
 
