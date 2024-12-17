@@ -35,13 +35,12 @@ To run LittleX, ensure you have the following dependencies installed:
 
 - **Jac**: The programming language used to define the application's logic.
 - **Jac Cloud**: Hosted execution environment for Jaseci applications.
-- **Splice-ORC**: Create advanced workflows by orchestrating multiple tools and APIs with LLMs.
-
+- **Jac-Splice-ORC**: Create advanced workflows by orchestrating multiple tools and APIs with LLMs.
 
 Install dependencies with:
 
 ```bash
-pip install jac jac-cloud splice-orc
+pip install jac jac-cloud jac-splice-orc
 ```
 
 
