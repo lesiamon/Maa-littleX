@@ -37,10 +37,43 @@ To run LittleX, ensure you have the following dependencies installed:
 - **Jac Cloud**: Hosted execution environment for Jaseci applications.
 - **Jac Splice Orc**: Create advanced workflows by orchestrating multiple tools and APIs with LLMs.
 
-Install dependencies with:
+# Running LittleX on Local environment
+
+## **Step-by-Step Instructions**
+
+### 1. Clone the Repository
+
+Start by cloning the **LittleX** repository to your local system:
 
 ```bash
-pip install jac jac-cloud jac-splice-orc
+git clone https://github.com/Jaseci-Labs/littleX.git
+cd littlex
+```
+### 2. Install Dependencies
+```bash
+pip install -r requirements.txt
+```
+### 3. Set OpenAI API Key
+
+- For linux
+   ```bash
+   export OPENAI_API_KEY='your-open-api-key'
+   ```
+- For Windows
+   ```bash
+   set OPENAI_API_KEY='your-open-api-key'
+   ```
+
+### 4. Start the Backend Server
+```bash
+jac serve littleX_BE/littleX_full.jac
+```
+### 4. Run the Frontend Server
+Open another command line
+```bash
+cd littleX_FE
+npm i
+npm run dev
 ```
 
 
