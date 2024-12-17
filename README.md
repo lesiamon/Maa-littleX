@@ -37,9 +37,7 @@ To run LittleX, ensure you have the following dependencies installed:
 - **Jac Cloud**: Hosted execution environment for Jaseci applications.
 - **Jac Splice Orc**: Create advanced workflows by orchestrating multiple tools and APIs with LLMs.
 
-# Running LittleX on Local environment
-
-## **Step-by-Step Instructions**
+## Running LittleX on Local environment
 
 ### 1. Clone the Repository
 
