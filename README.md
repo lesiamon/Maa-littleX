@@ -29,15 +29,8 @@ LittleX is a minimalistic implementation of a **social media platform** that sho
 
 ![Architecture](Documentation/images/Architecture.png)
 
-## **Setting Up the Environment**
 
-To run LittleX, ensure you have the following dependencies installed:
-
-- **Jac**: The programming language used to define the application's logic.
-- **Jac Cloud**: Hosted execution environment for Jaseci applications.
-- **Jac Splice Orc**: Create advanced workflows by orchestrating multiple tools and APIs with LLMs.
-
-## Running LittleX on Local environment
+## **Running LittleX on Local environment**
 
 ### 1. Clone the Repository
 
