@@ -23,7 +23,7 @@ LittleX is a minimalistic implementation of a **social media platform** that sho
    - Deploy workflows, walkers, and AI features to **Jac Cloud** for seamless scaling and execution.
 
 6. **Microservice Integration**:
-   - LittleX uses **jac-splice-orc** to deploy Python modules as cloud-native microservices, enabling scalable AI integration and optimal performance.
+   - LittleX uses **Jac Cloud Orchestrator (jac-splice-orc)** to deploy Python modules as cloud-native microservices, enabling scalable AI integration and optimal performance.
 
 ## **LittleX Architecture**
 
