@@ -57,7 +57,7 @@ pip install -r requirements.txt
 
 ### 4. Start the Backend Server
 ```bash
-jac serve littleX_BE/littleX_full.jac
+jac serve littleX_BE/littleX_mini.jac
 ```
 ### 4. Run the Frontend Server
 Open another command line
