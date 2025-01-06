@@ -8,7 +8,7 @@ with entry {
     os.environ["OPEN_API_KEY"] = "PUT_KEY_HERE";
 }
 
-glob logger = logging.getLogger("littelX");
+glob logger = logging.getLogger("littleX");
 
 # Define nodes
 node profile {
