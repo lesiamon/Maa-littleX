@@ -44,7 +44,7 @@ cd littlex
 ```bash
 pip install -r requirements.txt
 ```
-### 3. Create cluster
+### 3. Create Cluster
 ```bash
 kind create cluster --name littlex --config kind-config.yaml
 ```
