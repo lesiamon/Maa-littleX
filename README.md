@@ -52,7 +52,7 @@ kind create cluster --name littlex --config kind-config.yaml
 ```bash
 jac orc_initialize littlex
 ```
-### 3. Set OpenAI API Key
+### 5. Set OpenAI API Key
 
 - For linux
    ```bash
@@ -63,11 +63,11 @@ jac orc_initialize littlex
    set OPENAI_API_KEY='your-open-api-key'
    ```
 
-### 4. Start the Backend Server
+### 6. Start the Backend Server
 ```bash
 jac serve littleX_BE/littleX_mini.jac
 ```
-### 4. Run the Frontend Server
+### 7. Run the Frontend Server
 Open another command line
 ```bash
 cd littleX_FE
