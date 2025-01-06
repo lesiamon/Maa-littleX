@@ -6,7 +6,7 @@ import:py from sentence_transformers { SentenceTransformer }
 import:py from sklearn.metrics.pairwise { cosine_similarity }
 import:py numpy;
 
-glob logger = logging.getLogger("littelX");
+glob logger = logging.getLogger("littleX");
 glob llm = OpenAI(model_name="gpt-4o");
 glob model = SentenceTransformer('all-MiniLM-L6-v2');
 
