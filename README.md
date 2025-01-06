@@ -44,6 +44,14 @@ cd littlex
 ```bash
 pip install -r requirements.txt
 ```
+### 3. Create cluster
+```bash
+kind create cluster --name littlex --config kind-config.yaml
+```
+### 4. Initialize Jac-splice-orc
+```bash
+jac orc_initialize littlex
+```
 ### 3. Set OpenAI API Key
 
 - For linux
