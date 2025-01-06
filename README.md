@@ -64,9 +64,14 @@ jac orc_initialize littlex
    ```
 
 ### 6. Start the Backend Server
-```bash
-jac serve littleX_BE/littleX_mini.jac
-```
+- Run littleX_mini
+   ```bash
+   jac serve littleX_BE/littleX_mini.jac
+   ```
+- Run littleX_full
+   ```bash
+   jac serve littleX_BE/littleX_full.jac
+   ```
 ### 7. Run the Frontend Server
 Open another command line
 ```bash
