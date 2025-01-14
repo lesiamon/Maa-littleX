@@ -24,10 +24,7 @@ node profile {
     }
 }
 
-node tweet {
-    has content: str;
-    has created_at: str = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S");
-}
+node tweet;
 
 node comment {
     has content: str;
@@ -38,6 +35,11 @@ edge follow {}
 edge like {}
 
 edge post {}
+
+:node:tweet {
+    has content: str;
+    has created_at: str = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S");
+}
 
 can 'Summarize latest trends, major events, and notable interactions from the recent tweets in one line.'
 summarise_tweets(tweets: list[str]) -> 'Summarisation': str by llm();
@@ -66,7 +68,7 @@ walker load_user_profiles {
     }
     can load_profiles with `root entry {
         self.profiles: list = [];
-        
+
         for user in NodeAnchor.Collection.find({"name": "profile"}) {
             user_node = user.architype;
             self.profiles.append(
@@ -192,7 +194,7 @@ walker load_feed :visit_profile: {
         self.feeds: list = [];
         user_tweets = here spawn load_tweets();
         self.feeds.extend(user_tweets.tweets);
-        
+
         for user in here.followees {
             user_node = &user;
             Jac.unrestrict(user_node, level="READ");
