@@ -14,6 +14,14 @@ node profile {
     has username: str = "";
     has count_tag: dict = {};
     has followees: list = [];
+
+    can get with get_profile entry {
+        logger.info(f"profile info: Username: {here.username}, Followees: {here.followees}");
+    }
+
+    can confirm with update_profile exit {
+        logger.info(f"Profile updated");
+    }
 }
 
 node tweet {
@@ -81,7 +89,6 @@ walker update_profile :visit_profile: {
 
 walker get_profile :visit_profile: {
     can get_profile with profile entry {
-        logger.info(f"prfile info: {here}");
         report here;
     }
 }
