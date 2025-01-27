@@ -4,3 +4,4 @@ jac-cloud~=0.1.13
 jac-splice-orc~=0.1.3
 ollama
 pillow
+sentence_transformers
