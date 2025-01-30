@@ -209,7 +209,7 @@ walker load_feed :visit_profile: {
             );
             report {"feeds": filtered_results, "summary": summary};
         } else {
-            report {"feeds": self.feeds, "summary": summary};
+            report {"feeds": feeds, "summary": summary};
         }
     }
 }
