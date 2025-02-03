@@ -44,6 +44,7 @@ node Profile {
 }
 
 obj TweetInfo {
+    has username: str;
     has id: str;
     has content: str;
     has embedding: list;
@@ -87,6 +88,7 @@ node Tweet {
 
     can get_info()-> TweetInfo {
         return TweetInfo(
+            username=[self<-:Post:-][0].username,
             id=jid(self),
             content=self.content,
             embedding=self.embedding,
