@@ -63,7 +63,7 @@ node Tweet {
     }
 
     can delete with remove_tweet exit {
-        del self;
+        Jac.destroy(self);
     }
 
     can like_tweet with like_tweet entry {
