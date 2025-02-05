@@ -16,7 +16,7 @@ can search_tweets(query: str, tweets: list, tweet_embeddings: any, similarity_th
 }
 
 can 'Extract and summarize trending themes, major highlights, and key interactions from recent tweets in one concise sentence.'
-summarize_tweets(tweets: list[str]) -> 'Summarisation': str by llm();
+summarize_tweets(tweets: list[str]) -> 'Summarization': str by llm();
 
 node Profile {
     has username: str = "";
@@ -27,7 +27,8 @@ node Profile {
     }
 
     can get with get_profile entry {
-        report self;
+        follwers=[{"id": jid(i), "username": i.username} for i in [self-->(`?Profile)]];
+        report {"user": self, "followers": follwers};
     }
 
     can follow with follow_request entry {
