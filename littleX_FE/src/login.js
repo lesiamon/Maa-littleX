@@ -101,7 +101,7 @@ document.getElementById("login-form").addEventListener("submit", async (e) => {
 
         // Check if profile exists and has a username
         if (profileData.reports && profileData.reports.length > 0) {
-          const username = profileData.reports[0].context?.username;
+          const username = profileData.reports[0].user.context?.username;
 
           if (!username) {
             // Step 3: Prompt for username if not set
