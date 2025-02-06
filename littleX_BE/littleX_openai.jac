@@ -12,6 +12,7 @@ can search_tweets(query: str, tweets: list, tweet_embeddings: any, similarity_th
     query_embedding = sentence_transformer.encode([query]);
     similarities = cosine_similarity(query_embedding, tweet_embeddings)[0];
     results = [{**{"Tweet_Info": tweets[i]}, "similarity": similarities[i]} for i in range(len(similarities)) if similarities[i] >= similarity_threshold];
+    results= sorted(results,key=(with x: int can x["similarity"]), reverse=True);
     return results;
 }
 
