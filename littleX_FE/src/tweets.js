@@ -27,7 +27,7 @@ async function loadCurrentUserProfile() {
     if (!response.ok) throw new Error("Failed to load profile");
     const data = await response.json();
     if (data.reports && data.reports.length > 0) {
-      currentUserProfile = data.reports[0];
+      currentUserProfile = data.reports[0].user;
       const usernameElement = document.getElementById("username");
       if (usernameElement) {
         usernameElement.textContent =
@@ -380,15 +380,48 @@ function renderTweets(tweetsData) {
     }
   });
 }
-function handleSearch(searchQuery) {
-  return fetch(`${BASE_URL}/load_feed`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${token}`,
-    },
-    body: JSON.stringify({ search_query: searchQuery }),
-  });
+async function handleSearch(searchQuery) {
+  try {
+    const response = await fetch(`${BASE_URL}/load_feed`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify({ search_query: searchQuery }),
+    });
+
+    if (!response.ok) throw new Error("Failed to search tweets");
+    const data = await response.json();
+
+    if (data.reports && data.reports.length > 0) {
+      const summaryElement = document.getElementById("feed-summary");
+      if (summaryElement) {
+        summaryElement.textContent = data.reports[0].summary || "";
+      }
+
+      const transformedTweets = data.reports[0].feeds.map((feed) => ({
+        tweet: {
+          username: feed.Tweet_Info.context.username || "Anonymous",
+          content: {
+            id: feed.Tweet_Info.context.id,
+            content: feed.Tweet_Info.context.content,
+            comments: feed.Tweet_Info.context.comments || [],
+          },
+          likes: feed.Tweet_Info.context.likes || [],
+        },
+      }));
+
+      renderTweets(transformedTweets);
+    }
+  } catch (error) {
+    console.error("Error searching tweets:", error);
+    const tweetsDiv = document.getElementById("tweets");
+    if (tweetsDiv) {
+      tweetsDiv.innerHTML =
+        '<div class="md-card md-tweet"><div class="md-card-content">Error searching tweets</div></div>';
+    }
+  }
 }
 
 async function processSearchResponse(response) {
@@ -408,15 +441,17 @@ const contentSearchForm = document.getElementById("searchForm");
 const navSearchInput = document.getElementById("navSearchQuery");
 const contentSearchInput = document.getElementById("searchQuery");
 
-async function handleSearchInput(e) {
+function handleSearchInput(e) {
   const searchQuery = e.target.value;
 
+  // Sync the other search input
   if (e.target === navSearchInput && contentSearchInput) {
     contentSearchInput.value = searchQuery;
   } else if (e.target === contentSearchInput && navSearchInput) {
     navSearchInput.value = searchQuery;
   }
 
+  // If search is cleared, load all tweets
   if (!searchQuery) {
     loadTweets();
   }
@@ -433,14 +468,14 @@ if (contentSearchInput) {
 async function handleSearchSubmit(e) {
   e.preventDefault();
   const searchInput = e.target.querySelector("input");
-  const searchQuery = searchInput.value.trim();
+  const searchQuery = searchInput?.value?.trim();
 
-  try {
-    const response = await handleSearch(searchQuery);
-    await processSearchResponse(response);
-  } catch (error) {
-    console.error("Error:", error);
+  if (!searchQuery) {
+    await loadTweets(); // If search is empty, load all tweets
+    return;
   }
+
+  await handleSearch(searchQuery);
 }
 
 if (navSearchForm) {
