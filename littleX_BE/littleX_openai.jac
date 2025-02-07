@@ -95,7 +95,7 @@ node Tweet {
             content=self.content,
             embedding=self.embedding,
             likes=[i.username for i in [self-:Like:->]],
-            comments=[{"id": jid(i), "content": i.content} for i in [self-->(`?Comment)]]
+            comments=[{"username": [i<--(`?Profile)][0].username, "id": jid(i), "content": i.content} for i in [self-->(`?Comment)]]
         );
     }
 }
