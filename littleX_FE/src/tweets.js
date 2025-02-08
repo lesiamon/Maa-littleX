@@ -46,6 +46,20 @@ async function loadCurrentUserProfile() {
 
 async function loadProfilesToFollow() {
   try {
+    const profileResponse = await fetch(`${BASE_URL}/get_profile`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify({}),
+    });
+
+    if (!profileResponse.ok) throw new Error("Failed to load profile");
+    const profileData = await profileResponse.json();
+    const currentFollowing =
+      profileData.reports[0].user.context.followees || [];
+
     const response = await fetch(`${BASE_URL}/load_user_profiles`, {
       method: "POST",
       headers: {
@@ -53,6 +67,7 @@ async function loadProfilesToFollow() {
       },
       body: JSON.stringify({}),
     });
+
     if (!response.ok) throw new Error("Failed to load profiles");
     const data = await response.json();
 
@@ -63,11 +78,12 @@ async function loadProfilesToFollow() {
 
       followListElement.innerHTML = "";
 
+      // Filter out current user and already followed profiles
       const profilesToShow = profiles.filter((profile) => {
-        if (currentUserProfile && profile.id === currentUserProfile.id) {
-          return false;
-        }
-        return true;
+        return (
+          !currentFollowing.includes(profile.id) &&
+          profile.id !== profileData.reports[0].user.id
+        );
       });
 
       if (profilesToShow.length === 0) {
@@ -84,17 +100,6 @@ async function loadProfilesToFollow() {
           profile.name;
 
         const followBtn = profileElement.querySelector(".follow-btn");
-        const isFollowing = currentUserProfile?.context?.followees?.includes(
-          profile.id
-        );
-
-        if (isFollowing) {
-          followBtn.textContent = "Following";
-          followBtn.classList.add("following");
-        } else {
-          followBtn.textContent = "Follow";
-        }
-
         followBtn.addEventListener("click", async () => {
           await handleFollow(profile.id, followBtn);
         });
@@ -152,24 +157,41 @@ async function handleFollow(profileId, button) {
       throw new Error(`Failed to ${isFollowing ? "unfollow" : "follow"} user`);
     }
 
-    if (isFollowing) {
-      button.textContent = "Follow";
-      button.classList.remove("following");
+    // Wait for the response to complete
+    await response.text();
+
+    // Immediately remove the profile card if in tweets page
+    if (!isProfilePage) {
+      const listItem = button.closest(".md-list-item");
+      if (listItem) {
+        listItem.remove();
+        const followList = document.getElementById("followList");
+        if (followList && followList.children.length === 0) {
+          followList.innerHTML =
+            '<div class="md-list-item">No new profiles to follow</div>';
+        }
+      }
     } else {
-      button.textContent = "Following";
-      button.classList.add("following");
+      // Handle profile page button state
+      if (isFollowing) {
+        button.textContent = "Follow";
+        button.classList.remove("following");
+      } else {
+        button.textContent = "Following";
+        button.classList.add("following");
+      }
     }
 
     // Refresh data
     await loadCurrentUserProfile();
 
+    // Refresh appropriate views
     if (isProfilePage) {
       await loadUserTweets();
+      await loadFollowingUsers();
     } else {
       await loadTweets();
     }
-
-    await loadProfilesToFollow();
   } catch (error) {
     console.error("Error following/unfollowing:", error);
   }
@@ -180,7 +202,7 @@ function renderComment(commentData) {
   const commentElement = template.content.cloneNode(true);
 
   commentElement.querySelector(".username").textContent =
-    currentUserProfile?.context?.username || "Anonymous";
+    commentData.username || "Anonymous";
   commentElement.querySelector(".content").textContent =
     commentData.content || "";
 
@@ -670,28 +692,28 @@ async function handleDelete(tweetId) {
 
 async function loadFollowingUsers() {
   try {
-    const response = await fetch(`${BASE_URL}/load_user_profiles`, {
+    // First load the current user's profile to get following list
+    const profileResponse = await fetch(`${BASE_URL}/get_profile`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
       },
       body: JSON.stringify({}),
     });
-    if (!response.ok) throw new Error("Failed to load profiles");
-    const data = await response.json();
 
-    if (data.reports && data.reports.length > 0) {
-      const profiles = data.reports[0];
-      const followingListElement = document.getElementById("followingList");
-      if (!followingListElement) return;
+    if (!profileResponse.ok) throw new Error("Failed to load profile");
+    const profileData = await profileResponse.json();
 
-      followingListElement.innerHTML = "";
+    const followingListElement = document.getElementById("followingList");
+    if (!followingListElement) return;
 
-      const followingUsers = profiles.filter((profile) =>
-        currentUserProfile?.context.followees?.includes(profile.id)
-      );
+    followingListElement.innerHTML = "";
 
-      if (followingUsers.length === 0) {
+    if (profileData.reports && profileData.reports[0].followers) {
+      const followers = profileData.reports[0].followers;
+
+      if (followers.length === 0) {
         const noFollowingMsg = document.createElement("div");
         noFollowingMsg.className = "md-list-item";
         noFollowingMsg.textContent = "You're not following anyone yet";
@@ -699,13 +721,28 @@ async function loadFollowingUsers() {
         return;
       }
 
-      followingUsers.forEach((profile) => {
+      followers.forEach((profile) => {
         const template = document.getElementById("following-template");
         if (!template) return;
 
         const profileElement = template.content.cloneNode(true);
+
+        // Set the username
         profileElement.querySelector(".profile-name").textContent =
-          profile.name;
+          profile.username;
+
+        // Add unfollow button
+        const unfollowBtn = document.createElement("button");
+        unfollowBtn.className = "md-button md-button-outlined";
+        unfollowBtn.textContent = "Unfollow";
+        unfollowBtn.addEventListener("click", async () => {
+          await handleFollow(profile.id, unfollowBtn);
+        });
+
+        // Add the button to the list item
+        const listItem = profileElement.querySelector(".md-list-item");
+        listItem.appendChild(unfollowBtn);
+
         followingListElement.appendChild(profileElement);
       });
     }
