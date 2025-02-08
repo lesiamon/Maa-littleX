@@ -189,28 +189,49 @@
     <template id="comment-template">
       <div
         class="comment"
-        style="display: flex; align-items: flex-start; margin: 8px 0"
+        style="
+          display: flex;
+          align-items: flex-start;
+          margin: 8px 0;
+          padding: 8px;
+          border-radius: 4px;
+        "
       >
         <span
           class="material-icons"
           style="margin-right: 8px; font-size: 20px; color: #666"
           >account_circle</span
         >
-        <div style="flex: 1">
-          <span
-            class="username"
-            style="font-weight: 500; margin-right: 8px"
-          ></span>
-          <span class="content" style="color: #333"></span>
+        <div
+          class="content-wrapper"
+          style="flex: 1; display: flex; align-items: flex-start"
+        >
+          <div style="flex: 1">
+            <span
+              class="username"
+              style="font-weight: 500; margin-right: 8px"
+            ></span>
+            <span class="content" style="color: #333"></span>
+          </div>
         </div>
       </div>
     </template>
 
     <template id="following-template">
       <div class="md-list-item">
-        <div class="md-list-item-text">
-          <span class="material-icons">account_circle</span>
-          <span class="profile-name"></span>
+        <div
+          class="md-list-item-text"
+          style="
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            width: 100%;
+          "
+        >
+          <div style="display: flex; align-items: center; gap: 8px">
+            <span class="material-icons">account_circle</span>
+            <span class="profile-name"></span>
+          </div>
         </div>
       </div>
     </template>

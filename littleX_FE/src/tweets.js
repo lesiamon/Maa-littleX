@@ -348,26 +348,300 @@ function setupComments(elements, comments, tweetId) {
   commentsList.innerHTML = "";
 
   if (comments.length > 0) {
-    commentsList.appendChild(renderComment(comments[0]));
+    // Function to render all or single comment
+    const renderComments = (showAll = false) => {
+      commentsList.innerHTML = "";
+      const commentsToShow = showAll ? comments : [comments[0]];
 
-    if (comments.length > 1 && seeMoreBtn) {
+      commentsToShow.forEach((comment) => {
+        const commentEl = renderComment(comment);
+        const commentContainer = commentEl.querySelector(".comment");
+        const contentWrapper = commentEl.querySelector(".content-wrapper");
+        const contentEl = commentEl.querySelector(".content");
+
+        if (comment.username === currentUserProfile?.context?.username) {
+          const actionDiv = document.createElement("div");
+          actionDiv.className = "comment-actions";
+          actionDiv.style.display = "flex";
+          actionDiv.style.gap = "8px";
+          actionDiv.style.marginLeft = "8px";
+
+          // Edit button setup
+          const editBtn = document.createElement("button");
+          editBtn.className = "md-button md-button-text";
+          editBtn.innerHTML = '<span class="material-icons">edit</span>';
+          editBtn.onclick = (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            handleEditButtonClick(
+              comment,
+              contentEl,
+              actionDiv,
+              commentContainer
+            );
+          };
+
+          // Delete button
+          const deleteBtn = document.createElement("button");
+          deleteBtn.className = "md-button md-button-text";
+          deleteBtn.innerHTML = '<span class="material-icons">delete</span>';
+          deleteBtn.onclick = () => handleDeleteComment(comment.id, tweetId);
+
+          actionDiv.appendChild(editBtn);
+          actionDiv.appendChild(deleteBtn);
+          contentWrapper.appendChild(actionDiv);
+        }
+
+        commentsList.appendChild(commentEl);
+      });
+    };
+
+    // Initial render - show only first comment
+    renderComments(false);
+
+    // Setup toggle button visibility
+    if (comments.length > 1) {
+      // Show "See more" button
       seeMoreBtn.style.display = "block";
       seeMoreBtn.textContent = `See ${comments.length - 1} more comments`;
-      seeMoreBtn.addEventListener("click", () => {
-        commentsList.innerHTML = "";
-        comments.forEach((comment) =>
-          commentsList.appendChild(renderComment(comment))
-        );
-        seeMoreBtn.style.display = "none";
-      });
+
+      let isExpanded = false;
+      seeMoreBtn.onclick = () => {
+        isExpanded = !isExpanded;
+        renderComments(isExpanded);
+        seeMoreBtn.textContent = isExpanded
+          ? "Hide comments"
+          : `See ${comments.length - 1} more comments`;
+      };
+    } else {
+      seeMoreBtn.style.display = "none";
     }
   }
 
+  // Update comments count
   if (commentsCount) {
     commentsCount.textContent = `${comments.length} comments`;
   }
 
   setupCommentForm(commentForm, tweetId);
+}
+
+async function handleEditComment(commentId, commentEl) {
+  // Get the content element
+  const contentElement = commentEl.querySelector(".content");
+  if (!contentElement) return;
+
+  // Create edit container
+  const editContainer = document.createElement("div");
+  editContainer.className = "edit-comment-container";
+  editContainer.style.display = "flex";
+  editContainer.style.gap = "8px";
+  editContainer.style.marginTop = "8px";
+
+  // Create input field
+  const input = document.createElement("input");
+  input.type = "text";
+  input.className = "md-text-field-input";
+  input.value = contentElement.textContent;
+  input.style.flex = "1";
+
+  // Create save button
+  const saveButton = document.createElement("button");
+  saveButton.className = "md-button md-button-contained";
+  saveButton.textContent = "Save";
+
+  // Create cancel button
+  const cancelButton = document.createElement("button");
+  cancelButton.className = "md-button md-button-outlined";
+  cancelButton.textContent = "Cancel";
+
+  // Add buttons to container
+  editContainer.appendChild(input);
+  editContainer.appendChild(saveButton);
+  editContainer.appendChild(cancelButton);
+
+  // Hide original content and show edit form
+  contentElement.style.display = "none";
+  contentElement.parentNode.appendChild(editContainer);
+
+  // Handle save
+  saveButton.addEventListener("click", async () => {
+    const newContent = input.value.trim();
+    if (!newContent) return;
+
+    try {
+      const response = await fetch(`${BASE_URL}/update_comment/${commentId}`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+          Accept: "*/*",
+        },
+        body: JSON.stringify({ updated_content: newContent }), // Changed from content to updated_content
+      });
+
+      if (!response.ok) throw new Error("Failed to update comment");
+
+      contentElement.textContent = newContent;
+      contentElement.style.display = "";
+      editContainer.remove();
+
+      // Refresh tweets
+      isProfilePage ? await loadUserTweets() : await loadTweets();
+    } catch (error) {
+      console.error("Error updating comment:", error);
+      alert("Failed to update comment. Please try again.");
+    }
+  });
+
+  // Handle cancel
+  cancelButton.addEventListener("click", () => {
+    contentElement.style.display = "";
+    editContainer.remove();
+  });
+
+  // Focus input
+  input.focus();
+}
+// Function to handle deleting a comment
+async function handleDeleteComment(commentId, tweetId) {
+  if (!confirm("Are you sure you want to delete this comment?")) return;
+
+  try {
+    const response = await fetch(`${BASE_URL}/remove_comment/${commentId}`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+    });
+
+    if (!response.ok) throw new Error("Failed to delete comment");
+
+    // Refresh tweets to show updated comments
+    isProfilePage ? await loadUserTweets() : await loadTweets();
+  } catch (error) {
+    console.error("Error deleting comment:", error);
+  }
+}
+
+// Modified like button setup
+function setupLikeFunctionality(likeBtn, tweet, tweetId) {
+  const likeIcon = likeBtn.querySelector(".material-icons");
+  const countSpan = likeBtn.querySelector(".count");
+  if (!likeIcon || !countSpan) return;
+
+  const likes = tweet.likes || [];
+  const likeCount = likes.length;
+  const isLiked = likes.some(
+    (like) => like === currentUserProfile?.context?.username
+  );
+
+  likeBtn.addEventListener("click", async () => {
+    if (!tweetId) return;
+
+    if (isLiked) {
+      await handleRemoveLike(tweetId);
+    } else {
+      await handleLike(tweetId);
+    }
+
+    const newIsLiked = !isLiked;
+    updateLikeUI(likeIcon, countSpan, newIsLiked, likeCount);
+    isProfilePage ? await loadUserTweets() : await loadTweets();
+  });
+
+  updateLikeUI(likeIcon, countSpan, isLiked, likeCount);
+}
+
+function handleEditButtonClick(
+  comment,
+  contentEl,
+  actionDiv,
+  commentContainer
+) {
+  // Create edit container
+  const editContainer = document.createElement("div");
+  editContainer.className = "edit-comment-container";
+  editContainer.style.display = "flex";
+  editContainer.style.gap = "8px";
+  editContainer.style.flex = "1";
+
+  // Create input
+  const input = document.createElement("input");
+  input.type = "text";
+  input.className = "md-text-field-input";
+  input.value = contentEl.textContent;
+  input.style.flex = "1";
+  input.style.margin = "0";
+  input.style.padding = "4px 8px";
+  input.style.height = "28px";
+
+  // Buttons container
+  const buttonsContainer = document.createElement("div");
+  buttonsContainer.style.display = "flex";
+  buttonsContainer.style.gap = "4px";
+
+  // Save button
+  const saveBtn = document.createElement("button");
+  saveBtn.className = "md-button md-button-contained";
+  saveBtn.textContent = "Save";
+  saveBtn.style.padding = "4px 8px";
+  saveBtn.style.minWidth = "auto";
+
+  // Cancel button
+  const cancelBtn = document.createElement("button");
+  cancelBtn.className = "md-button md-button-outlined";
+  cancelBtn.textContent = "Cancel";
+  cancelBtn.style.padding = "4px 8px";
+  cancelBtn.style.minWidth = "auto";
+
+  buttonsContainer.appendChild(saveBtn);
+  buttonsContainer.appendChild(cancelBtn);
+  editContainer.appendChild(input);
+  editContainer.appendChild(buttonsContainer);
+
+  contentEl.style.display = "none";
+  contentEl.parentNode.insertBefore(editContainer, contentEl);
+  actionDiv.style.display = "none";
+  input.focus();
+
+  saveBtn.onclick = async (e) => {
+    e.preventDefault();
+    const newContent = input.value.trim();
+    if (!newContent) return;
+
+    try {
+      const response = await fetch(`${BASE_URL}/update_comment/${comment.id}`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+          Accept: "*/*",
+        },
+        body: JSON.stringify({ updated_content: newContent }),
+      });
+
+      if (!response.ok) throw new Error("Failed to update comment");
+
+      contentEl.textContent = newContent;
+      contentEl.style.display = "";
+      editContainer.remove();
+      actionDiv.style.display = "flex";
+
+      isProfilePage ? await loadUserTweets() : await loadTweets();
+    } catch (error) {
+      console.error("Error updating comment:", error);
+      alert("Failed to update comment. Please try again.");
+    }
+  };
+
+  cancelBtn.onclick = (e) => {
+    e.preventDefault();
+    contentEl.style.display = "";
+    editContainer.remove();
+    actionDiv.style.display = "flex";
+  };
 }
 
 function setupCommentForm(commentForm, tweetId) {
@@ -544,11 +818,8 @@ async function handleLike(tweetId) {
       },
     });
 
-    if (!response.ok) {
+    if (!response.ok)
       throw new Error(`Failed to like tweet: ${response.status}`);
-    }
-
-    // Wait for the response to complete
     await response.text();
     return true;
   } catch (error) {
@@ -556,6 +827,28 @@ async function handleLike(tweetId) {
     return false;
   }
 }
+
+async function handleRemoveLike(tweetId) {
+  try {
+    const response = await fetch(`${BASE_URL}/remove_like/${tweetId}`, {
+      method: "POST",
+      headers: {
+        Accept: "*/*",
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+    });
+
+    if (!response.ok)
+      throw new Error(`Failed to remove like: ${response.status}`);
+    await response.text();
+    return true;
+  } catch (error) {
+    console.error("Error removing like:", error);
+    return false;
+  }
+}
+
 async function handleComment(tweetId, content) {
   try {
     const response = await fetch(`${BASE_URL}/comment_tweet/${tweetId}`, {
@@ -731,12 +1024,33 @@ async function loadFollowingUsers() {
         profileElement.querySelector(".profile-name").textContent =
           profile.username;
 
-        // Add unfollow button
+        // Create and add unfollow button
         const unfollowBtn = document.createElement("button");
-        unfollowBtn.className = "md-button md-button-outlined";
+        unfollowBtn.className = "md-button unfollow-btn";
         unfollowBtn.textContent = "Unfollow";
+
+        // Add click handler for unfollow
         unfollowBtn.addEventListener("click", async () => {
-          await handleFollow(profile.id, unfollowBtn);
+          try {
+            const response = await fetch(
+              `${BASE_URL}/un_follow_request/${profile.id}`,
+              {
+                method: "POST",
+                headers: {
+                  "Content-Type": "application/json",
+                  Authorization: `Bearer ${token}`,
+                  Accept: "*/*",
+                },
+              }
+            );
+
+            if (!response.ok) throw new Error("Failed to unfollow user");
+
+            // Reload the following list after successful unfollow
+            await loadFollowingUsers();
+          } catch (error) {
+            console.error("Error unfollowing user:", error);
+          }
         });
 
         // Add the button to the list item
