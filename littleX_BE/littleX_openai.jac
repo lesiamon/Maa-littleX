@@ -104,6 +104,15 @@ node Tweet {
 
 node Comment {
     has content: str;
+
+    can update with update_comment entry {
+        self.content = here.updated_content;
+        report self;
+    }
+
+    can delete with remove_comment entry {
+        Jac.destroy(self);
+    }
 }
 
 edge Follow {}
@@ -173,6 +182,12 @@ walker remove_like {}
 walker comment_tweet {
     has content: str;
 }
+
+walker update_comment {
+    has updated_content: str;
+}
+
+walker remove_comment {}
 
 walker load_tweets :visit_profile: {
     has if_report: bool = False;
