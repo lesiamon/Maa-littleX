@@ -27,7 +27,7 @@ LittleX is a minimalistic implementation of a **social media platform** that sho
 
 ## **LittleX Architecture**
 
-![Architecture](Documentation/images/Architecture.png)
+![Architecture](Documentation/images/Architecture.jpg)
 
 
 ## **Running LittleX on Local Environment**
