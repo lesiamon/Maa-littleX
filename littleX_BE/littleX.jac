@@ -12,11 +12,12 @@ can search_tweets(query: str, tweets: list, tweet_embeddings: any, similarity_th
     query_embedding = sentence_transformer.encode([query]);
     similarities = cosine_similarity(query_embedding, tweet_embeddings)[0];
     results = [{**{"Tweet_Info": tweets[i]}, "similarity": similarities[i]} for i in range(len(similarities)) if similarities[i] >= similarity_threshold];
+    results= sorted(results,key=(with x: int can x["similarity"]), reverse=True);
     return results;
 }
 
 can 'Extract and summarize trending themes, major highlights, and key interactions from recent tweets in one concise sentence.'
-summarize_tweets(tweets: list[str]) -> 'Summarisation': str by llm();
+summarize_tweets(tweets: list[str]) -> 'Summarization': str by llm();
 
 node Profile {
     has username: str = "";
@@ -27,7 +28,8 @@ node Profile {
     }
 
     can get with get_profile entry {
-        report self;
+        follwers=[{"id": jid(i), "username": i.username} for i in [self-->(`?Profile)]];
+        report {"user": self, "followers": follwers};
     }
 
     can follow with follow_request entry {
@@ -38,12 +40,14 @@ node Profile {
 
     can un_follow with un_follow_request entry {
         current_profile = [root-->(`?Profile)];
-        current_profile[0] del-:Follow:-> self;
+        follow_edge = :e:[current_profile[0] -:Follow:-> self];
+        Jac.destroy(follow_edge[0]);
         report self;
     }
 }
 
 obj TweetInfo {
+    has username: str;
     has id: str;
     has content: str;
     has embedding: list;
@@ -62,7 +66,7 @@ node Tweet {
     }
 
     can delete with remove_tweet exit {
-        del self;
+        Jac.destroy(self);
     }
 
     can like_tweet with like_tweet entry {
@@ -73,7 +77,8 @@ node Tweet {
 
     can remove_like with remove_like entry {
         current_profile = [root-->(`?Profile)];
-        self del-:Like:-> current_profile[0];
+        like_edge = :e:[self -:Like:-> current_profile[0]];
+        Jac.destroy(like_edge[0]);
         report self;
     }
 
@@ -87,17 +92,27 @@ node Tweet {
 
     can get_info()-> TweetInfo {
         return TweetInfo(
+            username=[self<-:Post:-][0].username,
             id=jid(self),
             content=self.content,
             embedding=self.embedding,
             likes=[i.username for i in [self-:Like:->]],
-            comments=[{"id": jid(i), "content": i.content} for i in [self-->(`?Comment)]]
+            comments=[{"username": [i<--(`?Profile)][0].username, "id": jid(i), "content": i.content} for i in [self-->(`?Comment)]]
         );
     }
 }
 
 node Comment {
     has content: str;
+
+    can update with update_comment entry {
+        self.content = here.updated_content;
+        report self;
+    }
+
+    can delete with remove_comment entry {
+        Jac.destroy(self);
+    }
 }
 
 edge Follow {}
@@ -168,6 +183,12 @@ walker comment_tweet {
     has content: str;
 }
 
+walker update_comment {
+    has updated_content: str;
+}
+
+walker remove_comment {}
+
 walker load_tweets :visit_profile: {
     has if_report: bool = False;
     has tweet_info: list[TweetInfo] = [];
@@ -209,7 +230,7 @@ walker load_feed :visit_profile: {
             );
             report {"feeds": filtered_results, "summary": summary};
         } else {
-            report {"feeds": self.feeds, "summary": summary};
+            report {"feeds": feeds, "summary": summary};
         }
     }
 }
