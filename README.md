@@ -38,7 +38,7 @@ Start by cloning the **LittleX** repository to your local system:
 
 ```bash
 git clone https://github.com/Jaseci-Labs/littleX.git
-cd littlex
+cd littlex/littleX_BE
 ```
 ### 2. Install Dependencies
 ```bash
@@ -52,7 +52,7 @@ kind create cluster --name littlex --config kind-config.yaml
 ```bash
 jac orc_initialize littlex
 ```
-### 5. Set OpenAI API Key
+### 5. Set OpenAI API Key (Only for OpenAI Version)
 
 - For linux
    ```bash
@@ -64,18 +64,18 @@ jac orc_initialize littlex
    ```
 
 ### 6. Start the Backend Server
-- Run littleX_mini
+- Run Ollama version of littleX
    ```bash
-   jac serve littleX_BE/littleX_mini.jac
+   jac serve littleX_BE/littleX.jac
    ```
-- Run littleX_full
+- Run OpenAI version of littleX
    ```bash
-   jac serve littleX_BE/littleX_full.jac
+   jac serve littleX_BE/littleX_openai.jac
    ```
 ### 7. Run the Frontend Server
 Open another command line
 ```bash
-cd littleX_FE
+cd littlex/littleX_FE
 npm i
 npm run dev
 ```
