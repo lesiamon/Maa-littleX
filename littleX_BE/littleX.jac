@@ -1,11 +1,12 @@
 import:py datetime;
 import:py from jac_cloud.core.architype { NodeAnchor }
-import:py from mtllm.llms { Ollama }
+import:py from mtllm.llms { Ollama, OpenAI }
 import:py numpy;
 import:py from sentence_transformers { SentenceTransformer }
 import:py from sklearn.metrics.pairwise { cosine_similarity }
 
-glob llm = Ollama(host="http://127.0.0.1:11434", model_name="llama3.2:1b");
+glob llm_open_ai = OpenAI(model_name="gpt-4o");
+glob llm_ollama = Ollama(host="http://127.0.0.1:11434", model_name="llama3.2:1b");
 glob sentence_transformer = SentenceTransformer('all-MiniLM-L6-v2');
 
 can search_tweets(query: str, tweets: list, tweet_embeddings: any, similarity_threshold: float=0.25) -> list {
@@ -17,7 +18,7 @@ can search_tweets(query: str, tweets: list, tweet_embeddings: any, similarity_th
 }
 
 can 'Extract and summarize trending themes, major highlights, and key interactions from recent tweets in one concise sentence.'
-summarize_tweets(tweets: list[str]) -> 'Summarization': str by llm();
+summarize_tweets(tweets: list[str]) -> 'Summarization': str by llm_open_ai();
 
 node Profile {
     has username: str = "";
