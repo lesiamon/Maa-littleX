@@ -5,8 +5,8 @@ import:py numpy;
 import:py from sentence_transformers { SentenceTransformer }
 import:py from sklearn.metrics.pairwise { cosine_similarity }
 
-glob llm_open_ai = OpenAI(model_name="gpt-4o");
-glob llm_ollama = Ollama(host="http://127.0.0.1:11434", model_name="llama3.2:1b");
+# glob llm_open_ai = OpenAI(model_name="gpt-4o");
+# glob llm_ollama = Ollama(host="http://127.0.0.1:11434", model_name="llama3.2:1b");
 glob sentence_transformer = SentenceTransformer('all-MiniLM-L6-v2');
 
 can search_tweets(query: str, tweets: list, tweet_embeddings: any, similarity_threshold: float=0.25) -> list {
