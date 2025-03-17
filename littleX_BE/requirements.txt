@@ -1,6 +1,6 @@
-mtllm
+#mtllm
 jac-cloud==0.1.24
 openai
-ollama
+#ollama
 pillow
 sentence_transformers

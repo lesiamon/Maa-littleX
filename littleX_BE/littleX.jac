@@ -17,8 +17,8 @@ can search_tweets(query: str, tweets: list, tweet_embeddings: any, similarity_th
     return results;
 }
 
-can 'Extract and summarize trending themes, major highlights, and key interactions from recent tweets in one concise sentence.'
-summarize_tweets(tweets: list[str]) -> 'Summarization': str by llm_open_ai();
+# can 'Extract and summarize trending themes, major highlights, and key interactions from recent tweets in one concise sentence.'
+# summarize_tweets(tweets: list[str]) -> 'Summarization': str by llm_open_ai();
 
 node Profile {
     has username: str = "";
@@ -220,7 +220,8 @@ walker load_feed :visit_profile: {
         }
         tweets = [feed.content for feed in feeds];
         tweet_embeddings = [numpy.array(feed.embedding) for feed in feeds];
-        summary: str = summarize_tweets(tweets);
+        # summary: str = summarize_tweets(tweets);
+        summary: str = "";
 
         # Filter tweets based on search query
         if (self.search_query) {
