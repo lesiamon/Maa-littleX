@@ -1,4 +1,4 @@
 window.Constants = {
-  API_URL: "http://x-jac.jaseci.org",
+  API_URL: "https://x-jac.jaseci.org",
   APP_NAME: "littleX",
 };
