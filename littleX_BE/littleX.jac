@@ -9,12 +9,11 @@ import:py from sklearn.metrics.pairwise { cosine_similarity }
 # glob llm_ollama = Ollama(host="http://127.0.0.1:11434", model_name="llama3.2:1b");
 glob sentence_transformer = SentenceTransformer('all-MiniLM-L6-v2');
 
-can search_tweets(query: str, tweets: list, tweet_embeddings: any, similarity_threshold: float=0.25) -> list {
+can search_tweets(query: str, tweet:str) -> int {
     query_embedding = sentence_transformer.encode([query]);
-    similarities = cosine_similarity(query_embedding, tweet_embeddings)[0];
-    results = [{**{"Tweet_Info": tweets[i]}, "similarity": similarities[i]} for i in range(len(similarities)) if similarities[i] >= similarity_threshold];
-    results= sorted(results,key=(with x: int can x["similarity"]), reverse=True);
-    return results;
+    tweet_embeddings = sentence_transformer.encode([tweet]);
+    similarity = cosine_similarity(query_embedding, tweet_embeddings)[0];
+    return similarity;
 }
 
 # can 'Extract and summarize trending themes, major highlights, and key interactions from recent tweets in one concise sentence.'
@@ -100,6 +99,12 @@ node Tweet {
             likes=[i.username for i in [self-:Like:->]],
             comments=[{"username": [i<--(`?Profile)][0].username, "id": jid(i), "content": i.content} for i in [self-->(`?Comment)]]
         );
+    }
+
+    can get with load_feed entry {
+        tweet_info = self.get_info();
+        similarity = search_tweets(here.search_query, tweet_info.content);
+        here.results.append({"Tweet_Info": tweet_info, "similarity": similarity});
     }
 }
 
@@ -190,49 +195,15 @@ walker update_comment {
 
 walker remove_comment {}
 
-walker load_tweets :visit_profile: {
-    has if_report: bool = False;
-    has tweet_info: list[TweetInfo] = [];
-
-    can go_to_tweet with Profile entry {
-        visit [-->(`?Tweet)];
-        if (self.if_report) {
-            report self.tweet_info;
-        }
-    }
-
-    can report_tweet with Tweet entry {
-        self.tweet_info.append(here.get_info());
-    }
-}
-
 walker load_feed :visit_profile: {
     has search_query: str = "";
+    has results: list = [];
 
     can load with Profile entry {
-        feeds: list = [];
-        user_tweets = here spawn load_tweets();
-        feeds.extend(user_tweets.tweet_info);
-        
+        visit [-->(`?Tweet)];
         for user_node in [-:Follow:->](`?Profile) {
-            user_tweets = user_node spawn load_tweets();
-            feeds.extend(user_tweets.tweet_info);
+            visit [user_node-->(`?Tweet)];
         }
-        tweets = [feed.content for feed in feeds];
-        tweet_embeddings = [numpy.array(feed.embedding) for feed in feeds];
-        # summary: str = summarize_tweets(tweets);
-        summary: str = "";
-
-        # Filter tweets based on search query
-        if (self.search_query) {
-            filtered_results = search_tweets(
-                self.search_query,
-                feeds,
-                tweet_embeddings
-            );
-            report {"feeds": filtered_results, "summary": summary};
-        } else {
-            report {"feeds": feeds, "summary": summary};
-        }
+        report self.results;
     }
 }
