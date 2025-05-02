@@ -169,9 +169,9 @@ walker create_tweet :visit_profile: {
 
     can tweet with Profile entry {
         embedding = sentence_transformer.encode(self.content).tolist();
-        self.tweet_node = here +:Post:+> Tweet(content=self.content, embedding=embedding);
-        Jac.unrestrict(self.tweet_node[0], level="CONNECT");
-        report self.tweet_node;
+        tweet_node = here +:Post:+> Tweet(content=self.content, embedding=embedding);
+        Jac.unrestrict(tweet_node[0], level="CONNECT");
+        report tweet_node;
     }
 }
 

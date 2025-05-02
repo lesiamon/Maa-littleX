@@ -73,11 +73,11 @@ test un_follow_request {
 test create_tweet {
     root spawn visit_profile();
     profile = [root --> (`?Profile)][0];
-    test1 = profile spawn create_tweet(
+    profile spawn create_tweet(
         content = "test_tweet",
     ); 
-    tweet = test1.tweet_node[0];
-    assert tweet.content == "test_tweet";
+    test1 = [profile --> (`?Tweet)][0];
+    assert test1.content == "test_tweet";
 }
 
 test update_tweet {
