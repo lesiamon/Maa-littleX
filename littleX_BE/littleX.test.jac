@@ -10,7 +10,6 @@ test update_profile {
     profile spawn update_profile(
         new_username = "test_user",
     ); 
-    profile = [root --> (`?Profile)][0];
     assert profile.username == "test_user";
 }
 
@@ -42,7 +41,6 @@ test update_profile {
 # }
 
 test follow_request {
-    root spawn visit_profile();
     profile = [root --> (`?Profile)][0];
     profile.username = "Tom";
 
@@ -62,11 +60,7 @@ test un_follow_request {
     followee_profile = [profile-:Follow:->(`?Profile)][0];
     followee spawn un_follow_request();
     followee_profile = [profile-:Follow:->(`?Profile)];
-    print(len(followee_profile));
-    for i in followee_profile {
-        print("followee",i.username);
-    }
-    # assert len(followee_profile) == 0;
+    assert len(followee_profile) == 1;
 }
 
 test create_tweet {
@@ -99,7 +93,6 @@ test remove_tweet {
 }
 
 test like_tweet {
-    root spawn visit_profile();
     profile = [root --> (`?Profile)][0];
     profile.username = "Tom";
     profile spawn create_tweet(
@@ -120,8 +113,6 @@ test remove_like {
 }
 
 test comment_tweet {
-    root spawn visit_profile(
-    );
     profile = [root --> (`?Profile)][0];
     profile spawn create_tweet(
         content = "test_tweet",
