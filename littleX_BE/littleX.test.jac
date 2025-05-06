@@ -13,36 +13,8 @@ test update_profile {
     assert profile.username == "test_user";
 }
 
-# test load_user_profiles {
-#     test_item1 = root spawn visit_profile();
-#     tom = root spawn update_profile(
-#         new_username = "test1_user",
-#     );
-#     test1 = root spawn load_user_profiles(
-#     ); 
-#     print("profiles",test1.profiles);
-#     created_item1 = test1.profiles[0];
-#     print("profiles",created_item1);
-#     first_jid = jid(created_item1);
-#     assert created_item1.name == "test1_user";
-#     assert created_item1.id == first_jid;
-
-#     # test_item2 = root spawn visit_profile(
-#     # );
-#     # root spawn update_profile(
-#     #     new_username = "test2_user",
-#     # );
-#     # test2 = root spawn load_user_profiles(
-#     # ); 
-#     # created_item2 = test2.profiles[0];
-#     # second_jid = jid(created_item2);
-#     # assert created_item2.name == "test2_user";
-#     # assert created_item2.id == second_jid;
-# }
-
 test follow_request {
     profile = [root --> (`?Profile)][0];
-    profile.username = "Tom";
 
     followee = Profile("Sam");
     followee spawn follow_request();
@@ -53,11 +25,8 @@ test follow_request {
 
 test un_follow_request {
     profile = [root --> (`?Profile)][0];
-
     followee = Profile("Jonny");
     followee spawn follow_request();
-
-    followee_profile = [profile-:Follow:->(`?Profile)][0];
     followee spawn un_follow_request();
     followee_profile = [profile-:Follow:->(`?Profile)];
     assert len(followee_profile) == 1;
@@ -150,18 +119,3 @@ test remove_comment {
     
     assert len(comment) == 1;
 }
-
-# test load_feed {
-#     root spawn visit_profile();
-#     profile = [root --> (`?Profile)][0];
-#     profile spawn create_tweet(
-#         content = "test_tweet",
-#     );
-#     tweet = [profile --> (`?Tweet)][0];
-#     # tweet spawn load_feed(
-#     #     results = "[311321]",
-#     # );
-#     print("test1",tweet);
-#     # assert test1.search_query == "test_tweet";
-#     # assert len(test1.results) > 0;
-# }
