@@ -111,7 +111,7 @@ walker:create_tweet:can:tweet {
         report tweet_node;
     }
 
-walker:load_feed:can:load with Profile entry {
+walker:load_feed:can:load {
         visit [-->(`?Tweet)];
         for user_node in [-:Follow:->(`?Profile)] {
             visit [user_node-->(`?Tweet)];
