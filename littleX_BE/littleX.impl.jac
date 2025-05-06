@@ -15,42 +15,42 @@
         report {"user": self, "followers": follwers};
     }
 
-node:Profile:can:follow {
+:node:Profile:can:follow{
         current_profile = [root-->(`?Profile)];
         current_profile[0] +:Follow():+> self;
         report self;
     }
 
-node:profile:can:un_follow {
+:node:Profile:can:un_follow {
         current_profile = [root-->(`?Profile)];
         follow_edge = :e:[current_profile[0] -:Follow:-> self];
         Jac.destroy(follow_edge[0]);
         report self;
     }
 
-node:Tweet:can:update {
+:node:Tweet:can:update {
         self.content = here.updated_content;
         report self;
     }
 
-node:Tweet:can:delete {
+:node:Tweet:can:delete {
         Jac.destroy(self);
     }
 
-node:Tweet:can:like_tweet {
+:node:Tweet:can:like_tweet {
         current_profile = [root-->(`?Profile)];
         self +:Like():+> current_profile[0];
         report self;
     }
 
-node:Tweet:can:remove_like {
+:node:Tweet:can:remove_like {
         current_profile = [root-->(`?Profile)];
         like_edge = :e:[self -:Like:-> current_profile[0]];
         Jac.destroy(like_edge[0]);
         report self;
     }
 
-node:Tweet:can:comment {
+:node:Tweet:can:comment {
         current_profile = [root-->(`?Profile)];
         comment_node = current_profile[0] ++> Comment(content=here.content);
         Jac.unrestrict(comment_node[0], level="CONNECT");
@@ -58,7 +58,7 @@ node:Tweet:can:comment {
         report comment_node[0];
     }
 
-node:Tweet:can:get_info {
+:node:Tweet:can:get_info {
         return TweetInfo(
             username=[self<-:Post:-][0].username,
             id=jid(self),
@@ -69,22 +69,22 @@ node:Tweet:can:get_info {
         );
     }
 
-node:Tweet:can:get {
+:node:Tweet:can:get {
         tweet_info = self.get_info();
         similarity = search_tweets(here.search_query, tweet_info.content);
         here.results.append({"Tweet_Info": tweet_info, "similarity": similarity});
     }
 
-node:Comment:can:update {
+:node:Comment:can:update {
         self.content = here.updated_content;
         report self;
     }
 
-node:Comment:can:delete {
+:node:Comment:can:delete {
         Jac.destroy(self);
     }
 
-walker:visit_profile:can:visit_profile {
+:walker:visit_profile:can:visit_profile {
         visit [-->(`?Profile)] else {
             new_profile = here ++> Profile();
             Jac.unrestrict(new_profile[0], level="CONNECT");
@@ -92,7 +92,7 @@ walker:visit_profile:can:visit_profile {
         }
     }
 
-walker:load_user_profile:can:load_profiles {
+:walker:load_user_profiles:can:load_profiles {
         self.profiles: list = [];
         
         for user in NodeAnchor.Collection.find({"name": "Profile"}) {
@@ -104,14 +104,14 @@ walker:load_user_profile:can:load_profiles {
         report self.profiles;
     }
 
-walker:create_tweet:can:tweet {
+:walker:create_tweet:can:tweet {
         embedding = sentence_transformer.encode(self.content).tolist();
         tweet_node = here +:Post:+> Tweet(content=self.content, embedding=embedding);
         Jac.unrestrict(tweet_node[0], level="CONNECT");
         report tweet_node;
     }
 
-walker:load_feed:can:load {
+:walker:load_feed:can:load {
         visit [-->(`?Tweet)];
         for user_node in [-:Follow:->(`?Profile)] {
             visit [user_node-->(`?Tweet)];
