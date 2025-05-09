@@ -7,7 +7,7 @@
 }
  
 :node:Profile:can:update {
-    self.username = visitor.new_username;
+    self.username = here.new_username;
     report self;
 }
 
@@ -25,17 +25,17 @@
 :node:Profile:can:un_follow {
         current_profile = [root-->(`?Profile)];
         follow_edge = [edge current_profile[0] ->:Follow:-> self];
-        Jac.destroy(follow_edge[0]);
+        _.destroy(follow_edge[0]);
         report self;
     }
 
 :node:Tweet:can:update {
-        self.content = visitor.updated_content;
+        self.content = here.updated_content;
         report self;
     }
 
 :node:Tweet:can:delete {
-        Jac.destroy(self);
+        _.destroy(self);
     }
 
 :node:Tweet:can:like_tweet {
@@ -47,14 +47,14 @@
 :node:Tweet:can:remove_like {
         current_profile = [root-->(`?Profile)];
         like_edge = [edge self ->:Like:-> current_profile[0]];
-        Jac.destroy(like_edge[0]);
+        _.destroy(like_edge[0]);
         report self;
     }
 
 :node:Tweet:can:comment {
         current_profile = [root-->(`?Profile)];
-        comment_node = current_profile[0] ++> Comment(content=visitor.content);
-        Jac.perm_grant(comment_node[0], level="CONNECT");
+        comment_node = current_profile[0] ++> Comment(content=here.content);
+        _.perm_grant(comment_node[0], level="CONNECT");
         self ++> comment_node[0];
         report comment_node[0];
     }
@@ -72,23 +72,23 @@
 
 :node:Tweet:can:get {
         tweet_info = self.get_info();
-        similarity = search_tweets(visitor.search_query, tweet_info.content);
-        visitor.results.append({"Tweet_Info": tweet_info, "similarity": similarity});
+        similarity = search_tweets(here.search_query, tweet_info.content);
+        here.results.append({"Tweet_Info": tweet_info, "similarity": similarity});
     }
 
 :node:Comment:can:update {
-        self.content = visitor.updated_content;
+        self.content = here.updated_content;
         report self;
     }
 
 :node:Comment:can:delete {
-        Jac.destroy(self);
+        _.destroy(self);
     }
 
 :walker:visit_profile:can:visit_profile {
         visit [-->(`?Profile)] else {
-            new_profile = visitor ++> Profile();
-            Jac.perm_grant(new_profile[0], level="CONNECT");
+            new_profile = here ++> Profile();
+            _.perm_grant(new_profile[0], level="CONNECT");
             visit new_profile;
         }
     }
@@ -107,8 +107,8 @@
 
 :walker:create_tweet:can:tweet {
         embedding = sentence_transformer.encode(self.content).tolist();
-        tweet_node = visitor +>:Post:+> Tweet(content=self.content, embedding=embedding);
-        Jac.perm_grant(tweet_node[0], level="CONNECT");
+        tweet_node = here +>:Post:+> Tweet(content=self.content, embedding=embedding);
+        _.perm_grant(tweet_node[0], level="CONNECT");
         report tweet_node;
     }
 
