@@ -15,14 +15,14 @@ test update_profile {
 test follow_request {
     followee = Profile("Sam");
     followee spawn follow_request();
-    followee_profile = [root --> (`?Profile)-:Follow:->(`?Profile)][0];
+    followee_profile = [root --> (`?Profile)->:Follow:->(`?Profile)][0];
     check followee_profile.username == "Sam";
 }
 
 test un_follow_request {
-    followee = [root --> (`?Profile)-:Follow:->(`?Profile)][0]; 
+    followee = [root --> (`?Profile)->:Follow:->(`?Profile)][0]; 
     followee spawn un_follow_request();
-    check len([root --> (`?Profile)-:Follow:->(`?Profile)]) == 0;
+    check len([root --> (`?Profile)->:Follow:->(`?Profile)]) == 0;
 }
 
 test create_tweet {
@@ -53,14 +53,14 @@ test like_tweet {
     );
     tweet1 = [root --> (`?Profile) --> (`?Tweet)][0];
     tweet1 spawn like_tweet();
-    test1 = [tweet1 -:Like:-> ][0];
+    test1 = [tweet1 ->:Like:-> ][0];
     check test1.username == "test_user";
 }
 
 test remove_like {
     tweet1 = [root --> (`?Profile) --> (`?Tweet)][0];
     tweet1 spawn remove_like();
-    check len([tweet1 -:Like:-> ]) == 0;
+    check len([tweet1 ->:Like:-> ]) == 0;
 }
 
 test comment_tweet {
