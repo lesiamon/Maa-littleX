@@ -61,7 +61,7 @@
 
 :node:Tweet:can:get_info {
         return TweetInfo(
-            username=[self<-:Post:<-][0].username,
+            username=[self<-:Post:-][0].username,
             id=jid(self),
             content=self.content,
             embedding=self.embedding,
@@ -107,7 +107,7 @@
 
 :walker:create_tweet:can:tweet {
         embedding = sentence_transformer.encode(self.content).tolist();
-        tweet_node = here +>:Post:+> Tweet(content=self.content, embedding=embedding);
+        tweet_node = here +:Post:+> Tweet(content=self.content, embedding=embedding);
         Jac.unrestrict(tweet_node[0], level="CONNECT");
         report tweet_node;
     }

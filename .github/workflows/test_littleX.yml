@@ -2,9 +2,9 @@ name: LittleX Test
 
 on:
   push:
-    branches: [ main ]
+    branches: main
   pull_request:
-    branches: [ main ]
+    branches: main
 
 jobs:
   test:
@@ -23,17 +23,10 @@ jobs:
       - name: Install Jaseci
         run: |
           python -m pip install --upgrade pip
-          python -m venv venv
-          source venv/bin/activate
           pip install jac-cloud
           pip install mtllm
           pip install -r littleX_BE/requirements.txt
       # Run Jaclang test cases
       - name: Run Jaclang Tests
         run: |
-          source venv/bin/activate
           jac test littleX_BE/littleX.jac
-          deactivate
-      - name: Check test results
-        if: failure()
-        run: echo "Tests failed. Please check the test output above."
