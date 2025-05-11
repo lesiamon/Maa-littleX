@@ -1,0 +1,39 @@
+name: LittleX Test
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      # Install Jaclang and dependencies
+      - name: Install Jaseci
+        run: |
+          python -m pip install --upgrade pip
+          python -m venv venv
+          source venv/bin/activate
+          pip install jac-cloud
+          pip install mtllm
+          pip install -r littleX_BE/requirements.txt
+      # Run Jaclang test cases
+      - name: Run Jaclang Tests
+        run: |
+          source venv/bin/activate
+          jac test littleX_BE/littleX.jac
+          deactivate
+      - name: Check test results
+        if: failure()
+        run: echo "Tests failed. Please check the test output above."
