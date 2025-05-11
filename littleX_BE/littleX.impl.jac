@@ -1,5 +1,5 @@
 
-:def:search_tweets {
+:can:search_tweets {
     query_embedding = sentence_transformer.encode([query]);
     tweet_embeddings = sentence_transformer.encode([tweet]);
     similarity = cosine_similarity(query_embedding, tweet_embeddings)[0];
@@ -18,14 +18,14 @@
 
 :node:Profile:can:follow{
         current_profile = [root-->(`?Profile)];
-        current_profile[0] +>:Follow():+> self;
+        current_profile[0] +:Follow():+> self;
         report self;
     }
 
 :node:Profile:can:un_follow {
         current_profile = [root-->(`?Profile)];
-        follow_edge = [edge current_profile[0] ->:Follow:-> self];
-        _.destroy(follow_edge[0]);
+        follow_edge = :e:[ current_profile[0] -:Follow:-> self];
+        Jac.destroy(follow_edge[0]);
         report self;
     }
 
@@ -35,37 +35,37 @@
     }
 
 :node:Tweet:can:delete {
-        _.destroy(self);
+        Jac.destroy(self);
     }
 
 :node:Tweet:can:like_tweet {
         current_profile = [root-->(`?Profile)];
-        self +>:Like():+> current_profile[0];
+        self +:Like():+> current_profile[0];
         report self;
     }
 
 :node:Tweet:can:remove_like {
         current_profile = [root-->(`?Profile)];
-        like_edge = [edge self ->:Like:-> current_profile[0]];
-        _.destroy(like_edge[0]);
+        like_edge = :e:[ self -:Like:-> current_profile[0]];
+        Jac.destroy(like_edge[0]);
         report self;
     }
 
 :node:Tweet:can:comment {
         current_profile = [root-->(`?Profile)];
         comment_node = current_profile[0] ++> Comment(content=here.content);
-        _.perm_grant(comment_node[0], level="CONNECT");
+        Jac.unrestrict(comment_node[0], level="CONNECT");
         self ++> comment_node[0];
         report comment_node[0];
     }
 
-:node:Tweet:def:get_info {
+:node:Tweet:can:get_info {
         return TweetInfo(
             username=[self<-:Post:<-][0].username,
             id=jid(self),
             content=self.content,
             embedding=self.embedding,
-            likes=[i.username for i in [self->:Like:->]],
+            likes=[i.username for i in [self-:Like:->]],
             comments=[{"username": [i<--(`?Profile)][0].username, "id": jid(i), "content": i.content} for i in [self-->(`?Comment)]]
         );
     }
@@ -82,13 +82,13 @@
     }
 
 :node:Comment:can:delete {
-        _.destroy(self);
+        Jac.destroy(self);
     }
 
 :walker:visit_profile:can:visit_profile {
         visit [-->(`?Profile)] else {
             new_profile = here ++> Profile();
-            _.perm_grant(new_profile[0], level="CONNECT");
+            Jac.unrestrict(new_profile[0], level="CONNECT");
             visit new_profile;
         }
     }
@@ -108,13 +108,13 @@
 :walker:create_tweet:can:tweet {
         embedding = sentence_transformer.encode(self.content).tolist();
         tweet_node = here +>:Post:+> Tweet(content=self.content, embedding=embedding);
-        _.perm_grant(tweet_node[0], level="CONNECT");
+        Jac.unrestrict(tweet_node[0], level="CONNECT");
         report tweet_node;
     }
 
 :walker:load_feed:can:load {
         visit [-->(`?Tweet)];
-        for user_node in [->:Follow:->(`?Profile)] {
+        for user_node in [-:Follow:->(`?Profile)] {
             visit [user_node-->(`?Tweet)];
         }
         report self.results;
