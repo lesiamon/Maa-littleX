@@ -61,7 +61,7 @@
 
 :node:Tweet:can:get_info {
         return TweetInfo(
-            username=[self<-:Post:<-][0].username,
+            username=[self<-:Post:-][0].username,
             id=jid(self),
             content=self.content,
             embedding=self.embedding,
