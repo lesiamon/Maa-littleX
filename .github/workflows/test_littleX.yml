@@ -23,8 +23,8 @@ jobs:
       - name: Install Jaseci
         run: |
           python -m pip install --upgrade pip
-          pip install jac-cloud
           pip install mtllm
+          pip install jac-cloud
           pip install -r littleX_BE/requirements.txt
       # Run Jaclang test cases
       - name: Run Jaclang Tests
