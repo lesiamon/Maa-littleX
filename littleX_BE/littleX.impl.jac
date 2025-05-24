@@ -1,121 +1,130 @@
 
-:can:search_tweets {
-    query_embedding = sentence_transformer.encode([query]);
-    tweet_embeddings = sentence_transformer.encode([tweet]);
-    similarity = cosine_similarity(query_embedding, tweet_embeddings)[0];
+impl search_tweets {
+    transformed = vectorizer.fit_transform([query, tweet]);
+    similarity = cosine_similarity(transformed[0], transformed[1])[0];
     return similarity;
 }
- 
-:node:Profile:can:update {
-    self.username = here.new_username;
+
+impl Profile.update {
+    self.username = visitor.new_username;
     report self;
 }
 
-:node:Profile:can:get {
+impl Profile.get {
         follwers=[{"id": jid(i), "username": i.username} for i in [self-->(`?Profile)]];
         report {"user": self, "followers": follwers};
     }
 
-:node:Profile:can:follow{
+impl Profile.follow{
         current_profile = [root-->(`?Profile)];
-        current_profile[0] +:Follow():+> self;
+        current_profile[0] +>:Follow():+> self;
         report self;
     }
 
-:node:Profile:can:un_follow {
+impl Profile.un_follow {
         current_profile = [root-->(`?Profile)];
-        follow_edge = :e:[ current_profile[0] -:Follow:-> self];
-        Jac.destroy(follow_edge[0]);
+        follow_edge = [edge current_profile[0] ->:Follow:-> self];
+        del follow_edge[0];
         report self;
     }
 
-:node:Tweet:can:update {
-        self.content = here.updated_content;
+impl Tweet.update {
+        self.content = visitor.updated_content;
         report self;
     }
 
-:node:Tweet:can:delete {
-        Jac.destroy(self);
+impl Tweet.delete {
+        del self;
+        disengage;
     }
 
-:node:Tweet:can:like_tweet {
+impl Tweet.like_tweet {
         current_profile = [root-->(`?Profile)];
-        self +:Like():+> current_profile[0];
+        self +>:Like():+> current_profile[0];
         report self;
     }
 
-:node:Tweet:can:remove_like {
+impl Tweet.remove_like {
         current_profile = [root-->(`?Profile)];
-        like_edge = :e:[ self -:Like:-> current_profile[0]];
-        Jac.destroy(like_edge[0]);
+        like_edge = [edge self ->:Like:-> current_profile[0]];
+        del like_edge[0];
         report self;
     }
 
-:node:Tweet:can:comment {
+impl Tweet.comment {
         current_profile = [root-->(`?Profile)];
-        comment_node = current_profile[0] ++> Comment(content=here.content);
-        Jac.unrestrict(comment_node[0], level="CONNECT");
+        comment_node = current_profile[0] +>:Post():+> Comment(content=visitor.content);
+        _.perm_grant(comment_node[0], level="CONNECT");
         self ++> comment_node[0];
         report comment_node[0];
     }
 
-:node:Tweet:can:get_info {
+impl Tweet.get_info {
         return TweetInfo(
-            username=[self<-:Post:-][0].username,
+            username=[self<-:Post:<-][0].username,
             id=jid(self),
             content=self.content,
             embedding=self.embedding,
-            likes=[i.username for i in [self-:Like:->]],
+            likes=[i.username for i in [self->:Like:->]],
             comments=[{"username": [i<--(`?Profile)][0].username, "id": jid(i), "content": i.content} for i in [self-->(`?Comment)]]
         );
     }
 
-:node:Tweet:can:get {
+impl Tweet.get {
         tweet_info = self.get_info();
-        similarity = search_tweets(here.search_query, tweet_info.content);
-        here.results.append({"Tweet_Info": tweet_info, "similarity": similarity});
+        similarity = search_tweets(visitor.search_query, tweet_info.content);
+        visitor.results.append({"Tweet_Info": tweet_info, "similarity": similarity});
     }
 
-:node:Comment:can:update {
-        self.content = here.updated_content;
+impl Comment.update {
+        self.content = visitor.updated_content;
         report self;
     }
 
-:node:Comment:can:delete {
-        Jac.destroy(self);
+impl Comment.delete {
+        del self;
+        disengage;
     }
 
-:walker:visit_profile:can:visit_profile {
+impl visit_profile.visit_profile {
         visit [-->(`?Profile)] else {
             new_profile = here ++> Profile();
-            Jac.unrestrict(new_profile[0], level="CONNECT");
+            _.perm_grant(new_profile[0], level="CONNECT");
             visit new_profile;
         }
     }
 
-:walker:load_user_profiles:can:load_profiles {
+impl load_user_profiles.load_profiles {
         self.profiles: list = [];
-        
+
         for user in NodeAnchor.Collection.find({"name": "Profile"}) {
-            user_node = user.architype;
+            user_node = user.archetype;
             self.profiles.append(
                 {"name": user_node.username, "id": jid(user_node)}
             );
         }
-        report self.profiles;
     }
 
-:walker:create_tweet:can:tweet {
-        embedding = sentence_transformer.encode(self.content).tolist();
-        tweet_node = here +:Post:+> Tweet(content=self.content, embedding=embedding);
-        Jac.unrestrict(tweet_node[0], level="CONNECT");
+impl load_user_profiles.report_profiles {
+    report self.profiles;
+}
+
+impl create_tweet.tweet {
+        embedding = vectorizer.fit_transform([self.content]).toarray().tolist();
+        tweet_node = here +>:Post():+> Tweet(content=self.content, embedding=embedding);
+        _.perm_grant(tweet_node[0], level="CONNECT");
         report tweet_node;
     }
 
-:walker:load_feed:can:load {
-        visit [-->(`?Tweet)];
-        for user_node in [-:Follow:->(`?Profile)] {
+impl load_feed.load {
+        visit [->:Post:->];
+        ignore [--> (`?Comment)];
+        for user_node in [->:Follow:->(`?Profile)] {
             visit [user_node-->(`?Tweet)];
         }
-        report self.results;
     }
+
+impl load_feed.report_feed {
+        self.results.sort(key=lambda x:dict:x['similarity'][0], reverse=True);
+        report self.results;
+}
