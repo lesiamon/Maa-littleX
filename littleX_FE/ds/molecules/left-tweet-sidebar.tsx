@@ -1,7 +1,12 @@
 "use client";
 
-import React, { JSX, useState } from "react";
-import { Search, LogOutIcon } from "lucide-react";
+import React, {
+  ForwardRefExoticComponent,
+  JSX,
+  RefAttributes,
+  useState,
+} from "react";
+import { Search, LogOutIcon, LucideProps, CircleIcon } from "lucide-react";
 import { Baumans } from "next/font/google";
 import { cn } from "@/_core/utils";
 import AppLogo from "../atoms/app-logo";
@@ -11,22 +16,14 @@ import { Input } from "../atoms/input";
 import { useAppDispatch } from "@/store/useStore";
 import { searchTweetAction } from "@/modules/tweet";
 import useAppNavigation from "@/_core/hooks/useAppNavigation";
+import { Bird, Home, Settings } from "lucide-react";
+import { NavMenu } from "@/_core/hooks/useDashboard";
 
 const banumas = Baumans({
   weight: "400",
   subsets: ["latin"],
   style: "normal",
 });
-
-// Better type definition for navigation menu
-type NavMenu = {
-  id: number;
-  name: string;
-  icon: JSX.Element;
-  route: string; // Changed from 'param' to 'route' for clarity
-  count?: number; // Made optional since not all menu items need counts
-  isActive?: boolean; // Add active state
-};
 
 interface LeftTweetSidebarProps {
   userData: {
@@ -59,6 +56,17 @@ const LeftTweetSidebar = ({
   // Better navigation handler
   const handleNavigation = (route: string) => {
     navigation.navigate(route);
+  };
+
+  const navIcon: Record<
+    NavMenu["name"],
+    ForwardRefExoticComponent<
+      Omit<LucideProps, "ref"> & RefAttributes<SVGSVGElement>
+    >
+  > = {
+    Home: Home,
+    "My Tweets": Bird,
+    Settings: Settings,
   };
 
   return (
@@ -99,7 +107,7 @@ const LeftTweetSidebar = ({
         <ul className="space-y-1">
           {navMenu.map((menu) => {
             const isActive = currentRoute === menu.route || menu.isActive;
-
+            const IconComponent = navIcon[menu.name] || (() => <CircleIcon />);
             return (
               <li key={menu.id}>
                 <button
@@ -117,7 +125,7 @@ const LeftTweetSidebar = ({
                         isActive && "text-sidebar-accent-foreground"
                       )}
                     >
-                      {menu.icon}
+                      <IconComponent />
                     </span>
                     <span className="text-sm font-medium">{menu.name}</span>
                   </div>

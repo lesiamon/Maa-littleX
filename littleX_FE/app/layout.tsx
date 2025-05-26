@@ -3,14 +3,9 @@ import "@/app/globals.css";
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import { Providers } from "./providers";
-
+import "./globals.css";
+import { Toaster } from "@/ds/atoms/toaster";
 const inter = Inter({ subsets: ["latin"] });
-
-export const metadata: Metadata = {
-  title: "Little X",
-  description:
-    "A simple task manager built with atomic design, Redux, and shadcn UI",
-};
 
 export default function RootLayout({
   children,
@@ -28,6 +23,3 @@ export default function RootLayout({
     </html>
   );
 }
-
-import "./globals.css";
-import { Toaster } from "@/ds/atoms/toaster";

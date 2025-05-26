@@ -12,7 +12,7 @@ import {
 
 import { Textarea } from "@/ds/atoms/textarea";
 
-import { useTweetForm } from "@/modules/tweet/hooks/use-create-tweet";
+import { useTweetForm } from "@/modules/tweet/hooks/useCreateTweet";
 import { Loader2, Smile, PaperclipIcon, SendHorizonalIcon } from "lucide-react";
 
 interface TweetFormProps {

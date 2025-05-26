@@ -4,6 +4,7 @@ import React from "react";
 
 import LeftTweetSideBar from "@/ds/molecules/left-tweet-sidebar";
 import RightTweetSidebar from "@/ds/molecules/right-tweet-sidebar";
+import MainFeed from "@/ds/molecules/tweet-main";
 import CheckProfile from "@/ds/molecules/check-profile-dialog";
 import { ProtectedRoute } from "@/ds/wrappers/prtoected-auth";
 import {
@@ -12,11 +13,10 @@ import {
   MobileRightSidebar,
 } from "@/ds/molecules/mobile-components";
 
-import SettingMain from "@/ds/molecules/setting-main";
 import ResponsiveDashboardTemplate from "@/ds/templates/responsive-dashboard-template";
-import { useDashboard } from "../../../_core/hooks/useDashboard";
+import { useDashboard } from "@/_core/hooks/useDashboard";
 
-const SettingsPage = () => {
+const TweetPage = () => {
   const {
     profile,
     userData,
@@ -29,8 +29,10 @@ const SettingsPage = () => {
     handleSearch,
     handleFollow,
     handleUnfollow,
+    feeds,
+    searchResult,
+    userTweets,
   } = useDashboard();
-
   // If profile not set up, show dialog
   if (profile?.user?.username === "") {
     return (
@@ -66,7 +68,15 @@ const SettingsPage = () => {
             currentRoute={`/?tab=${currentTab}`}
           />
         }
-        main={<SettingMain />}
+        main={
+          <MainFeed
+            feeds={feeds}
+            userTweets={userTweets}
+            searchResult={searchResult}
+            profile={profile.user}
+            isLoading={isLoading}
+          />
+        }
         rightSidebar={
           <RightTweetSidebar
             userData={userData}
@@ -80,4 +90,4 @@ const SettingsPage = () => {
   );
 };
 
-export default SettingsPage;
+export default TweetPage;

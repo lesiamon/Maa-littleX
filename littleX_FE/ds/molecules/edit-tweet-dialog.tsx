@@ -14,7 +14,7 @@ import {
   FormMessage,
 } from "../atoms/form";
 import { Textarea } from "../atoms/textarea";
-import { useTweetForm } from "@/modules/tweet/hooks/use-create-tweet";
+import { useTweetForm } from "@/modules/tweet/hooks/useCreateTweet";
 import { Loader2 } from "lucide-react";
 
 interface EditTweetDialogProps {

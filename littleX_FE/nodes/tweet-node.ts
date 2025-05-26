@@ -12,11 +12,3 @@ export interface Comment {
   username: string;
   content: string;
 }
-// export interface Comment {
-//   comment: {
-//     id: string;
-//     username: string;
-//     content: string;
-//   };
-//   tweetId: string;
-// }

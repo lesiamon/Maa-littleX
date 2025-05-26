@@ -1,6 +1,6 @@
 import React from "react";
 
-type DashboardLeftRightSidebarTemplateProps = {
+type ResponsiveDashboardTemplateProps = {
   rightSidebar: React.ReactNode;
   leftSidebar: React.ReactNode;
   main: React.ReactNode;
@@ -11,8 +11,8 @@ type DashboardLeftRightSidebarTemplateProps = {
   maxWidth?: boolean;
 };
 
-const NewDashboardLeftRightSidebar = (
-  props: DashboardLeftRightSidebarTemplateProps
+const ResponsiveDashboardTemplate = (
+  props: ResponsiveDashboardTemplateProps
 ) => {
   const {
     rightSidebar,
@@ -55,4 +55,4 @@ const NewDashboardLeftRightSidebar = (
   );
 };
 
-export default NewDashboardLeftRightSidebar;
+export default ResponsiveDashboardTemplate;
