@@ -28,23 +28,16 @@ export const createTweetAction = createAsyncThunk(
     }
   }
 );
-export const searchTweetAction = createAsyncThunk(
-  "tweet/search",
-  async (content: string, { rejectWithValue }) => {
+
+export const searchTweetsAction = createAsyncThunk(
+  "tweet/searchFeeds",
+  async (query: string, { rejectWithValue }) => {
     try {
-      const response = await TweetApi.createTweet(content);
-      const embedding = response?.embedding;
-
-      // Delete the temporary tweet
-      if (response?.id) {
-        await TweetApi.deleteTweet(response.id);
-      }
-
-      // Only return the embedding for search
-      return { embedding };
+      const response = await TweetApi.searchTweets(query);
+      return response;
     } catch (error) {
       return rejectWithValue(
-        error instanceof Error ? error.message : "Failed to search Tweet"
+        error instanceof Error ? error.message : "Failed to fetch Tweets"
       );
     }
   }

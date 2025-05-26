@@ -13,8 +13,6 @@ import { cn } from "@/_core/utils";
 import { Avatar, AvatarFallback, AvatarImage } from "../atoms/avatar";
 import { Button } from "../atoms/button";
 import { Input } from "../atoms/input";
-import { useAppDispatch } from "@/store/useStore";
-import { searchTweetAction } from "@/modules/tweet";
 import useAppNavigation from "@/_core/hooks/useAppNavigation";
 import AppLogo from "../atoms/app-logo";
 import { Baumans } from "next/font/google";

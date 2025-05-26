@@ -21,6 +21,27 @@ export const TweetApi = {
     }) as TweetNode[];
   },
 
+  searchTweets: async (query: string) => {
+    const res = await private_api.post("/walker/load_feed", {
+      search: query,
+    });
+    const data = res.data?.reports?.[0] || [];
+
+    const result = data.map((entry: any) => {
+      const tweet = entry?.Tweet_Info?.context;
+      return {
+        id: tweet?.id,
+        username: tweet?.username ?? "",
+        content: tweet?.content ?? "",
+        embedding: tweet?.embedding ?? [],
+        likes: Array.isArray(tweet?.likes) ? tweet.likes : [],
+        comments: Array.isArray(tweet?.comments) ? tweet.comments : [],
+      } as TweetNode;
+    }) as TweetNode[];
+
+    return result;
+  },
+
   createTweet: async (content: string) => {
     const response = await private_api.post("/walker/create_tweet", {
       content,

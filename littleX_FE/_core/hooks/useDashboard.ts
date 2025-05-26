@@ -4,7 +4,7 @@ import useAppNavigation from "@/_core/hooks/useAppNavigation";
 import {
   fetchTweetsAction,
   followRequestAction,
-  searchTweetAction,
+  searchTweetsAction,
   unFollowRequestAction,
   useTweets,
 } from "@/modules/tweet";
@@ -75,8 +75,8 @@ export const useDashboard = () => {
 
   // Handle search from any component
   const handleSearch = (query: string) => {
-    dispatch(searchTweetAction(query));
     navigation.navigate("/?tab=search");
+    dispatch(searchTweetsAction(query));
   };
 
   // Handle follow/unfollow actions

@@ -11,11 +11,11 @@ import {
   likeTweetAction,
   loadUserProfilesAction,
   removeLikeAction,
-  searchTweetAction,
   unFollowRequestAction,
   updateCommentAction,
   updateTweetAction,
   updateUserProfileAction,
+  searchTweetsAction,
 } from "@/modules/tweet";
 import { cosineSimilarity } from "@/modules/tweet/utils";
 import { toast, useToast } from "@/ds/atoms/hooks/use-toast";
@@ -130,39 +130,23 @@ export const tweetSlice = createSlice({
     });
 
     // Search
-    builder.addCase(searchTweetAction.fulfilled, (state, action) => {
-      state.isLoading = false;
-      state.success = true;
-      state.successMessage = "Search completed successfully";
-
-      if (action.payload?.embedding) {
-        // Calculate similarity scores and filter/sort tweets
-        const matchingTweets = state.items
-          .map((tweet) => ({
-            ...tweet,
-            similarity: cosineSimilarity(
-              action.payload.embedding,
-              tweet.embedding
-            ),
-          }))
-          .filter((tweet) => tweet.similarity > 0.4)
-          .sort((a, b) => b.similarity - a.similarity);
-
-        state.searchResult = matchingTweets;
-      } else {
-        state.searchResult = [];
-      }
-    });
-    builder.addCase(searchTweetAction.rejected, (state, action) => {
-      state.isLoading = false;
-      state.error = action.payload as string;
-      state.success = false;
-    });
-    builder.addCase(searchTweetAction.pending, (state) => {
+    builder.addCase(searchTweetsAction.pending, (state) => {
       state.isLoading = true;
       state.error = null;
       state.success = false;
       state.successMessage = null;
+    });
+    builder.addCase(searchTweetsAction.fulfilled, (state, action) => {
+      state.isLoading = false;
+      state.success = true;
+      state.successMessage = "Tweets searched successfully";
+      state.items = action.payload;
+      state.searchResult = action.payload;
+    });
+    builder.addCase(searchTweetsAction.rejected, (state, action) => {
+      state.isLoading = false;
+      state.error = action.payload as string;
+      state.success = false;
     });
 
     builder.addCase(updateTweetAction.fulfilled, (state, action) => {
