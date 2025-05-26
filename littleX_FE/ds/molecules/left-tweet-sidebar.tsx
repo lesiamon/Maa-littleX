@@ -14,7 +14,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "../atoms/avatar";
 import { Button } from "../atoms/button";
 import { Input } from "../atoms/input";
 import { useAppDispatch } from "@/store/useStore";
-import { searchTweetAction } from "@/modules/tweet";
+import { searchTweetsAction } from "@/modules/tweet";
 import useAppNavigation from "@/_core/hooks/useAppNavigation";
 import { Bird, Home, Settings } from "lucide-react";
 import { NavMenu } from "@/_core/hooks/useDashboard";
@@ -48,7 +48,7 @@ const LeftTweetSidebar = ({
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
     if (searchQuery.trim()) {
-      dispatch(searchTweetAction(searchQuery));
+      dispatch(searchTweetsAction(searchQuery));
       navigation.navigate("/?tab=search");
     }
   };

@@ -11,6 +11,7 @@ import {
   unFollowRequestAction,
   updateTweetAction,
   updateUserProfileAction,
+  searchTweetsAction,
 } from "../actions";
 import { TweetNode } from "@/nodes/tweet-node";
 import { useEffect } from "react";
@@ -77,6 +78,10 @@ export const useTweets = () => {
     dispatch(fetchTweetsAction());
   };
 
+  const searchFeeds = async (query: string) => {
+    dispatch(searchTweetsAction(query));
+  };
+
   const loadUserProfiles = async () => {
     dispatch(loadUserProfilesAction());
   };
@@ -135,5 +140,6 @@ export const useTweets = () => {
     // createTweet,
     deleteTweet,
     updateTweet,
+    searchFeeds,
   };
 };
