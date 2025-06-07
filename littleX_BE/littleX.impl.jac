@@ -125,6 +125,6 @@ impl load_feed.load {
     }
 
 impl load_feed.report_feed {
-        self.results.sort(key=lambda x:dict:x['similarity'][0], reverse=False);
+        self.results.sort(key=lambda x:dict:x['similarity'][0], reverse=True);
         report self.results;
 }
