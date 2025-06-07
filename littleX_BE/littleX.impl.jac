@@ -6,7 +6,7 @@ impl search_tweets {
 }
 
 impl Profile.update {
-    self.username = here.new_username;
+    self.username = visitor.new_username;
     report self;
 }
 
@@ -29,7 +29,7 @@ impl Profile.un_follow {
     }
 
 impl Tweet.update {
-        self.content = here.updated_content;
+        self.content = visitor.updated_content;
         report self;
     }
 
@@ -53,7 +53,7 @@ impl Tweet.remove_like {
 
 impl Tweet.comment {
         current_profile = [root-->(`?Profile)];
-        comment_node = current_profile[0] +>:Post():+> Comment(content=here.content);
+        comment_node = current_profile[0] +>:Post():+> Comment(content=visitor.content);
         _.perm_grant(comment_node[0], level="CONNECT");
         self ++> comment_node[0];
         report comment_node[0];
@@ -72,12 +72,12 @@ impl Tweet.get_info {
 
 impl Tweet.get {
         tweet_info = self.get_info();
-        similarity = search_tweets(here.search_query, tweet_info.content);
-        here.results.append({"Tweet_Info": tweet_info, "similarity": similarity});
+        similarity = search_tweets(visitor.search_query, tweet_info.content);
+        visitor.results.append({"Tweet_Info": tweet_info, "similarity": similarity});
     }
 
 impl Comment.update {
-        self.content = here.updated_content;
+        self.content = visitor.updated_content;
         report self;
     }
 
@@ -125,6 +125,6 @@ impl load_feed.load {
     }
 
 impl load_feed.report_feed {
-        self.results.sort(key=lambda x:dict:x['similarity'][0], reverse=True);
+        self.results.sort(key=lambda x:dict:x['similarity'][0], reverse=False);
         report self.results;
 }
