@@ -2,10 +2,15 @@ import datetime;
 import numpy;
 import from sklearn.feature_extraction.text { TfidfVectorizer }
 import from sklearn.metrics.pairwise { cosine_similarity }
+import from mtllm.llm { Model }
+
+glob llm = Model(model_name="gemini/gemini-2.5-flash", verbose=False);
 
 glob vectorizer = TfidfVectorizer();
 
 def search_tweets(query: str, tweet:str) -> int;
+
+def summarise_tweets(tweets: list[str]) -> str by llm();
 
 node Profile {
     has username: str = "";
