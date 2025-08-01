@@ -125,3 +125,19 @@ walker load_feed(visit_profile) {
     can report_feed with exit;
 
 }
+
+walker summarize_tweets_cron {
+    has summary: str = "";
+
+    can summarize with `root entry;
+    
+    class __specs__ {
+        has private: bool = True;
+        has schedule: dict = {
+            "trigger": "cron",
+            "save": True,
+            "minute": "*/1",
+            "second": "0"
+        };
+    }
+}
