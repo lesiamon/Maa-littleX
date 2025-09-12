@@ -102,7 +102,7 @@ jobs:
             -t $ECR_REGISTRY/$ECR_REPOSITORY:latest \
             --push \
             .
-        working-directory: jac2-new/backend
+        working-directory: littleX_BE
 
   deploy-littleX-webapp: # TODO: need to change the tags below
     if: startsWith(github.ref, 'refs/tags/littleX-') || startsWith(github.ref, 'refs/tags/v')
@@ -186,7 +186,7 @@ jobs:
           ECR_REGISTRY: 776241927220.dkr.ecr.us-east-2.amazonaws.com
           ECR_REPOSITORY: littleX/webapp 
           IMAGE_TAG: ${{ steps.tag.outputs.tag }}
-        run: |
+        run: | #TODO: this is not a vite application but next based frontend
           echo "Building and pushing webapp to: $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG"
           # Build and push AMD64-only image (following deployment template)
           docker buildx build \
@@ -196,7 +196,7 @@ jobs:
             -t $ECR_REGISTRY/$ECR_REPOSITORY:latest \
             --push \
             .
-        working-directory: jac2-new/frontend
+        working-directory: littleX_BE
 
   summary:
     needs: [deploy-littleX, deploy-littleX-webapp]
