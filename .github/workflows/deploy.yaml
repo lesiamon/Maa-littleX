@@ -191,7 +191,7 @@ jobs:
           # Build and push AMD64-only image for Next.js frontend
           docker buildx build \
             --platform linux/amd64 \
-            --build-arg NEXT_PUBLIC_API_URL=https://littlex-api.jaseci.org \
+            --build-arg NEXT_PUBLIC_API_URL=https://x-api.jaseci.org \
             -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG \
             -t $ECR_REGISTRY/$ECR_REPOSITORY:latest \
             --push \
@@ -210,12 +210,12 @@ jobs:
           echo "- **Image Tag**: ${{ needs.deploy-littleX.outputs.tag }}" >> $GITHUB_STEP_SUMMARY
           echo "- **ECR Repository**: 776241927220.dkr.ecr.us-east-2.amazonaws.com/littlex/jac" >> $GITHUB_STEP_SUMMARY
           echo "- **Status**: ${{ needs.deploy-littleX.result }}" >> $GITHUB_STEP_SUMMARY
-          echo "- **API Endpoint**: https://littlex-api.jaseci.org" >> $GITHUB_STEP_SUMMARY
+          echo "- **API Endpoint**: https://x-api.jaseci.org" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "### Frontend (Webapp)" >> $GITHUB_STEP_SUMMARY
           echo "- **Image Tag**: ${{ needs.deploy-littleX-webapp.outputs.tag }}" >> $GITHUB_STEP_SUMMARY
           echo "- **ECR Repository**: 776241927220.dkr.ecr.us-east-2.amazonaws.com/littlex/webapp" >> $GITHUB_STEP_SUMMARY
           echo "- **Status**: ${{ needs.deploy-littleX-webapp.result }}" >> $GITHUB_STEP_SUMMARY
-          echo "- **Frontend URL**: https://littlex.jaseci.org" >> $GITHUB_STEP_SUMMARY
+          echo "- **Frontend URL**: https://x.jaseci.org" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "**Note**: Deployment will be handled automatically by Flux in the infrastructure repository." >> $GITHUB_STEP_SUMMARY
