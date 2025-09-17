@@ -11,7 +11,7 @@ permissions:
 
 jobs:
   deploy-littleX: # TODO: need to change the tags below
-    if: startsWith(github.ref, 'refs/tags/littleX-') || startsWith(github.ref, 'refs/tags/v') 
+    if: startsWith(github.ref, 'refs/tags/littleX-') 
     runs-on: ubuntu-latest
     outputs:
       tag: ${{ steps.tag.outputs.tag }}
@@ -67,11 +67,9 @@ jobs:
             # Release event - clean tag name
             TAG_NAME=${GITHUB_REF#refs/tags/}
             
-            # Remove prefixes: littleX-v1.2.3 -> v1.2.3 or littleX-1.2.3 -> 1.2.3 
+            # Remove prefix: littleX-v1.2.3 -> v1.2.3
             if [[ $TAG_NAME =~ ^littleX-(.+)$ ]]; then
               TAG="${BASH_REMATCH[1]}"
-            elif [[ $TAG_NAME =~ ^v(.+)$ ]]; then
-              TAG="$TAG_NAME"
             else
               # Use tag as-is if no prefix
               TAG="$TAG_NAME"
@@ -105,7 +103,7 @@ jobs:
         working-directory: littleX_BE
 
   deploy-littleX-webapp: # TODO: need to change the tags below
-    if: startsWith(github.ref, 'refs/tags/littleX-') || startsWith(github.ref, 'refs/tags/v')
+    if: startsWith(github.ref, 'refs/tags/littleX-')
     runs-on: ubuntu-latest
     outputs:
       tag: ${{ steps.tag.outputs.tag }}
@@ -161,11 +159,9 @@ jobs:
             # Release event - clean tag name
             TAG_NAME=${GITHUB_REF#refs/tags/}
             
-            # Remove prefixes: littleX-v1.2.3 -> v1.2.3 or littleX-1.2.3 -> 1.2.3
+            # Remove prefix: littleX-v1.2.3 -> v1.2.3
             if [[ $TAG_NAME =~ ^littleX-(.+)$ ]]; then
               TAG="${BASH_REMATCH[1]}"
-            elif [[ $TAG_NAME =~ ^v(.+)$ ]]; then
-              TAG="$TAG_NAME"
             else
               # Use tag as-is if no prefix
               TAG="$TAG_NAME"
