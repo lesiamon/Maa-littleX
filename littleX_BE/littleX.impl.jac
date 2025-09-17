@@ -127,8 +127,3 @@ impl load_feed.report_feed {
         self.results.sort(key=lambda x:dict:x['similarity'][0], reverse=True);
         report self.results;
 }
-
-impl summarize_tweets_cron.summarize {
-    feed = here spawn load_feed();
-    self.summary = summarise_tweets([res.content for res in feed.results]);
-}
