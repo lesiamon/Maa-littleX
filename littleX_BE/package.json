@@ -1,0 +1,13 @@
+{
+  "name": "littlex_be",
+  "version": "1.0.0",
+  "description": "This directory contains files of littleX backend\r * littleX.jac - Ollama version of LittleX\r * littleX.jac - OpenAI version of LittleX\r * littleX_mini.jac - Mini version of LittleX\r * requirements.txt - File that used to install dependencies\r * kind-config.yaml - File that used to create cluster\r * Archive folder - Old version littleX files",
+  "main": "index.js",
+  "scripts": {
+    "dev": "jac run littleX.jac",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC"
+}
