@@ -49,7 +49,7 @@
     "embla-carousel-react": "8.5.1",
     "input-otp": "1.4.1",
     "lucide-react": "^0.454.0",
-    "next": "15.1.0",
+    "next": "^15.5.6",
     "next-themes": "latest",
     "react": "^19",
     "react-day-picker": "latest",
@@ -67,8 +67,8 @@
   },
   "devDependencies": {
     "@types/node": "^22",
-    "@types/react": "^19",
-    "@types/react-dom": "^19",
+    "@types/react": "^18",
+    "@types/react-dom": "^18",
     "postcss": "^8",
     "tailwindcss": "^3.4.17",
     "typescript": "^5"
