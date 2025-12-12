@@ -133,13 +133,14 @@ body {
     display: none;
   }
 
+  /*
   ::-moz-scrollbar-button:decrement,
   ::-moz-scrollbar-button:increment,
   ::-webkit-scrollbar-button:decrement,
   ::-webkit-scrollbar-button:increment {
     width: 0px;
   }
-
+*/
   ::-moz-scrollbar-button,
   ::-webkit-scrollbar-button {
     width: 0px;
