@@ -86,16 +86,20 @@ export const TweetApi = {
     return response.data.status === 200 ? id : null;
   },
   likeTweet: async (id: string, username: string) => {
-    const response = await private_api.post(`/walker/like_tweet/${id}`, {});
-    const data = response.data?.reports?.[0] || [];
+    const response = await private_api.post(`/walker/like_tweet/${id}`, {
+      username: username
+    });
+    const data = response.data?.reports?.[0]?.[0]?.context || {};
     return {
       id: data.id,
       username: username,
     };
   },
   removeLike: async (id: string, username: string) => {
-    const response = await private_api.post(`/walker/remove_like/${id}`, {});
-    const data = response.data?.reports?.[0] || [];
+    const response = await private_api.post(`/walker/remove_like/${id}`, {
+      username: username
+    });
+    const data = response.data?.reports?.[0]?.[0]?.context || {};
     return {
       id: data.id,
       username: username,
@@ -236,7 +240,7 @@ export const TweetApi = {
   },
 
   deleteCommentTweet: async (tweetId: string, id: string) => {
-    const response = await private_api.post(`/walker/remove_comment/${id}`, {});
+    const response = await private_api.post(`/walker/remove_comment/${id}`, { tweet_id: tweetId });
     return response.data.status === 200 ? { tweetId, id } : null;
   },
 };

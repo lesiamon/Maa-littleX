@@ -9,3 +9,7 @@ numpy
 # sentence_transformers
 python-dotenv
 requests
+httpx
+fastapi
+uvicorn
+python-multipart

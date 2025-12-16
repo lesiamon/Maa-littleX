@@ -1,1 +1,3 @@
-.jac_mypy_cache/
+.jac_mypy_cache/.env
+*.env
+node_modules/

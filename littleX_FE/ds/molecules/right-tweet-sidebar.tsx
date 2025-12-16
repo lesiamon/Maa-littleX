@@ -2,7 +2,6 @@ import React from "react";
 import { SunIcon, MoonIcon, BellIcon } from "lucide-react";
 import { Button } from "../atoms/button";
 import { useAppTheme } from "../use-app-theme";
-import { Popover, PopoverContent, PopoverTrigger } from "../atoms/popover";
 import { User } from "@/store/tweetSlice";
 import Link from "next/link";
 import { Avatar, AvatarFallback, AvatarImage } from "../atoms/avatar";
@@ -22,30 +21,27 @@ interface RightTweetSidebarProps {
   following: User[];
   suggetions: User[];
 }
-const RightTweetSidebar = ({
-  userData,
-  following,
-  suggetions,
-}: RightTweetSidebarProps) => {
-  const dispatch = useAppDispatch();
 
-  const { toggleTheme, isDark } = useAppTheme();
-  const notifications =
-    localStorageUtil.getItem<
-      { content: string; status: "success" | "error"; time: string }[]
-    >("NOTIFICATIONS") || [];
+const RightTweetSidebar = React.memo(
+  ({
+    userData,
+    following,
+    suggetions,
+  }: RightTweetSidebarProps) => {
+    const dispatch = useAppDispatch();
+    const { toggleTheme, isDark } = useAppTheme();
 
-  const handleFollow = (id: string) => {
-    dispatch(followRequestAction(id));
-    dispatch(fetchTweetsAction());
-  };
+    const handleFollow = (id: string) => {
+      dispatch(followRequestAction(id));
+      dispatch(fetchTweetsAction());
+    };
 
-  const handleUnFollow = (id: string) => {
-    dispatch(unFollowRequestAction(id));
-    dispatch(fetchTweetsAction());
-  };
+    const handleUnFollow = (id: string) => {
+      dispatch(unFollowRequestAction(id));
+      dispatch(fetchTweetsAction());
+    };
 
-  return (
+    return (
     <div className=" h-screen w-full overflow-y-auto">
       {/* Header with actions */}
       <div className="flex items-center justify-between p-4 mb-6 border-b border-sidebar-border">
@@ -81,33 +77,13 @@ const RightTweetSidebar = ({
               <MoonIcon className="size-4 text-muted-foreground" />
             )}
           </Button>
-          <Popover>
-            <PopoverTrigger asChild>
-              <Button
-                variant="ghost"
-                size="icon"
-                aria-label="Toggle notifications"
-              >
-                <BellIcon className="size-4 text-muted-foreground" />
-              </Button>
-            </PopoverTrigger>
-            <PopoverContent align="end" className="px-0 w-80">
-              <h4 className="text-sm font-semibold text-sidebar-foreground mb-2 px-4">
-                Notifications
-              </h4>
-              <ul className="space-y-2 max-h-[12.75rem] overflow-y-auto pl-4 pr-2">
-                {notifications.map((item, index) => (
-                  <li
-                    key={index}
-                    className="text-xs text-muted-foreground grid grid-cols-[1fr_3.6rem]"
-                  >
-                    <span>{item.content}</span>
-                    <span className="text-right">{item.time}</span>
-                  </li>
-                ))}
-              </ul>
-            </PopoverContent>
-          </Popover>
+          <Button
+            variant="ghost"
+            size="icon"
+            aria-label="Toggle notifications"
+          >
+            <BellIcon className="size-4 text-muted-foreground" />
+          </Button>
         </div>
       </div>
 
@@ -200,6 +176,17 @@ const RightTweetSidebar = ({
       </div>
     </div>
   );
-};
+},
+  (prevProps, nextProps) => {
+    // Return true if props are equal (skip re-render)
+    return (
+      prevProps.userData === nextProps.userData &&
+      prevProps.following === nextProps.following &&
+      prevProps.suggetions === nextProps.suggetions
+    );
+  }
+);
+
+RightTweetSidebar.displayName = "RightTweetSidebar";
 
 export default RightTweetSidebar;

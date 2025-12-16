@@ -44,7 +44,7 @@ export function useAuth() {
   }, [dispatch]);
 
   useEffect(() => {
-    if (success) {
+    if (success && initialCheckComplete) {
       if (successMessage === "Login successful") {
         router.navigate("/");
       } else if (successMessage === "Registration successful") {
@@ -54,7 +54,7 @@ export function useAuth() {
       }
       dispatch(resetSuccess());
     }
-  }, [success, successMessage, router, dispatch]);
+  }, [success, successMessage, initialCheckComplete, dispatch]);
 
   const login = useCallback(
     async (email: string, password: string) => {

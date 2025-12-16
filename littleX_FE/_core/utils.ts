@@ -15,6 +15,7 @@ export function cn(...inputs: ClassValue[]) {
 export const localStorageUtil = {
   // Set item with optional expiration
   setItem: <T>(key: AppKey, value: T, expires?: number): void => {
+    if (typeof window === "undefined") return; // Server-side guard
     const item: StorageItem<T> = {
       value,
       timestamp: Date.now(),
@@ -29,6 +30,7 @@ export const localStorageUtil = {
 
   // Get item with type safety
   getItem: <T>(key: AppKey): T | null => {
+    if (typeof window === "undefined") return null; // Server-side guard
     try {
       const itemStr = localStorage.getItem(key);
       if (!itemStr) return null;
@@ -50,6 +52,7 @@ export const localStorageUtil = {
 
   // Remove item
   removeItem: (key: AppKey): void => {
+    if (typeof window === "undefined") return; // Server-side guard
     try {
       localStorage.removeItem(key);
     } catch (error) {
@@ -59,6 +62,7 @@ export const localStorageUtil = {
 
   // Clear all storage
   clear: (): void => {
+    if (typeof window === "undefined") return; // Server-side guard
     try {
       localStorage.clear();
     } catch (error) {
@@ -68,6 +72,7 @@ export const localStorageUtil = {
 
   // Check if key exists
   hasItem: (key: AppKey): boolean => {
+    if (typeof window === "undefined") return false; // Server-side guard
     return localStorage.getItem(key) !== null;
   },
 };

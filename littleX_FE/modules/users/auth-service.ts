@@ -64,8 +64,22 @@ export const AuthService = {
   getCurrentUser: (): UserNode | null => {
     const token = localStorageUtil.getItem(APP_KEYS.TOKEN);
     const user: UserNode | null = localStorageUtil.getItem(APP_KEYS.USER);
+    
+    // Auto-create demo user if no token exists (bypass login)
     if (!token || !user) {
-      return null;
+      const demoUser: UserNode = {
+        id: "demo-user-001",
+        email: "demo@littlex.local",
+        root_id: "root-demo",
+        is_activated: true,
+        is_admin: false,
+        expiration: 999999999,
+        state: "active",
+        avatar: "https://icons.veryicon.com/png/o/miscellaneous/two-color-icon-library/user-286.png",
+      };
+      localStorageUtil.setItem(APP_KEYS.TOKEN, "demo-token-" + Date.now());
+      localStorageUtil.setItem(APP_KEYS.USER, demoUser);
+      return demoUser;
     }
     return {
       id: user.id || "",

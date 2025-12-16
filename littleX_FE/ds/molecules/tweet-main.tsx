@@ -3,6 +3,7 @@ import { TweetNode } from "@/nodes/tweet-node";
 import { User } from "@/store/tweetSlice";
 import { TweetCard } from "../organisms/tweet-card";
 import { useSearchParams } from "next/navigation";
+import React from "react";
 
 type MainFeedProps = {
   feeds: TweetNode[];
@@ -13,15 +14,14 @@ type MainFeedProps = {
 };
 
 // Main Social Media Feed Component
-const MainFeed = ({
+const MainFeedContent = ({
   feeds,
   userTweets,
   searchResult,
   profile,
   isLoading = false,
-}: MainFeedProps) => {
-  const searchParams = useSearchParams();
-  const activeTab = searchParams.get("tab") || "home";
+  activeTab,
+}: MainFeedProps & { activeTab: string }) => {
 
   // Determine which data to display based on the URL parameter
   const getActiveData = (): TweetNode[] => {
@@ -126,6 +126,13 @@ const MainFeed = ({
       </div>
     </div>
   );
+};
+
+const MainFeed = (props: MainFeedProps) => {
+  const searchParams = useSearchParams();
+  const activeTab = searchParams.get("tab") || "home";
+  
+  return <MainFeedContent {...props} activeTab={activeTab} />;
 };
 
 export default MainFeed;

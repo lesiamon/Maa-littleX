@@ -8,6 +8,7 @@ import {
   MoreVertical,
   Share2,
   MessageSquare,
+  Loader2,
 } from "lucide-react";
 import { Card, CardContent, CardFooter, CardHeader } from "../atoms/card";
 import { Avatar, AvatarFallback, AvatarImage } from "../atoms/avatar";
@@ -35,8 +36,9 @@ import {
 import { Button } from "../atoms/button";
 import { Input } from "../atoms/input";
 import { Textarea } from "../atoms/textarea";
-import { JSX, useState } from "react";
+import { JSX, useState, useEffect } from "react";
 import { useAppDispatch } from "@/store/useStore";
+import { private_api } from "@/_core/api-client";
 import {
   deleteTweetAction,
   likeTweetAction,
@@ -116,7 +118,7 @@ function LikesDialog({
                     src={`https://i.pravatar.cc/150?u=${likeUsername}`}
                   />
                   <AvatarFallback className="text-xs">
-                    {likeUsername[0].toUpperCase()}
+                    {(likeUsername || "?")[0].toUpperCase()}
                   </AvatarFallback>
                 </Avatar>
                 <span className="text-sm">{likeUsername}</span>
@@ -162,7 +164,7 @@ function CommentsDialog({
                       src={`https://i.pravatar.cc/150?u=${comment?.username}`}
                     />
                     <AvatarFallback className="text-xs">
-                      {comment.username[0].toUpperCase()}
+                      {(comment.username || "?")[0].toUpperCase()}
                     </AvatarFallback>
                   </Avatar>
                   <div className="flex-1">
@@ -222,7 +224,7 @@ function CommentsDialog({
               <AvatarImage
                 src={`https://i.pravatar.cc/150?u=${loginUsername}`}
               />
-              <AvatarFallback>{loginUsername[0].toUpperCase()}</AvatarFallback>
+              <AvatarFallback>{(loginUsername || "?")[0].toUpperCase()}</AvatarFallback>
             </Avatar>
             <Input
               type="text"
@@ -294,12 +296,37 @@ export function TweetCard({
   const [isLikesDialogOpen, setIsLikesDialogOpen] = useState<boolean>(false);
   const [isCommentsDialogOpen, setIsCommentsDialogOpen] =
     useState<boolean>(false);
+  const [isAnalysisDialogOpen, setIsAnalysisDialogOpen] = useState<boolean>(false);
+  const [analysisData, setAnalysisData] = useState<any>(null);
+  const [analysisLoading, setAnalysisLoading] = useState<boolean>(false);
 
   // Combined state for both adding and editing comments
   const [commentInputValue, setCommentInputValue] = useState<string>("");
   const [editingComment, setEditingComment] = useState<Comment | null>(null);
 
+  // Fetch analysis when dialog opens
+  useEffect(() => {
+    if (isAnalysisDialogOpen && !analysisData) {
+      const fetchAnalysis = async () => {
+        setAnalysisLoading(true);
+        try {
+          const response = await private_api.post("/assistant/analyze_tweet", {
+            content: content,
+          });
+          setAnalysisData(response.data);
+        } catch (error) {
+          console.error("Error analyzing tweet:", error);
+          setAnalysisData({ error: "Failed to analyze tweet" });
+        } finally {
+          setAnalysisLoading(false);
+        }
+      };
+      fetchAnalysis();
+    }
+  }, [isAnalysisDialogOpen, analysisData, content]);
+
   const loginUsername: string = profile.username;
+
   const liked: boolean = !!likes.find(
     (person) => person.toLowerCase() === loginUsername.toLowerCase()
   );
@@ -362,10 +389,10 @@ export function TweetCard({
           <div className="flex gap-3">
             <Avatar className="size-8">
               <AvatarImage src={`https://i.pravatar.cc/150?u=${username}`} />
-              <AvatarFallback>{username[0].toUpperCase()}</AvatarFallback>
+              <AvatarFallback>{(username || "?")[0].toUpperCase()}</AvatarFallback>
             </Avatar>
             <div>
-              <h3 className="font-semibold text-card-foreground">{username}</h3>
+              <h3 className="font-semibold text-card-foreground">{username || "Anonymous"}</h3>
               <p className="text-sm text-muted-foreground">{timeAgo}</p>
             </div>
           </div>
@@ -380,18 +407,21 @@ export function TweetCard({
           <p className="text-card-foreground mb-2 whitespace-pre-wrap wrap">
             {content}
           </p>
-          {/* <div className="flex flex-wrap gap-1.5 mb-3">
-            {Array(3)
-              .fill(0)
-              .map((_, index) => (
-                <span
-                  key={index}
-                  className="text-primary hover:underline cursor-pointer text-sm"
-                >
-                  #tag
-                </span>
-              ))}
-          </div> */}
+          {/* AI Avatar Analysis Panel - Click to expand */}
+          <button
+            onClick={() => setIsAnalysisDialogOpen(true)}
+            className="w-full mt-3 p-3 bg-gradient-to-r from-purple-500/10 to-blue-500/10 border border-purple-500/20 rounded-lg hover:border-purple-500/40 hover:from-purple-500/15 hover:to-blue-500/15 transition-all cursor-pointer"
+          >
+            <div className="flex items-center gap-2 mb-2">
+              <span className="text-lg">🧠</span>
+              <span className="text-xs font-semibold text-purple-600 dark:text-purple-400">Click for AI Analysis</span>
+            </div>
+            <div className="text-xs text-muted-foreground space-y-1 text-left">
+              <div>📰 <span className="font-medium">Article Detection:</span> Analyzing...</div>
+              <div>🛍️ <span className="font-medium">Product Detection:</span> Checking...</div>
+              <div>📍 <span className="font-medium">Place Detection:</span> Identifying...</div>
+            </div>
+          </button>
         </CardContent>
         <CardFooter className="flex flex-col items-stretch p-0">
           <div className="border-t border-border px-4 py-3 ">
@@ -431,7 +461,7 @@ export function TweetCard({
               <AvatarImage
                 src={`https://i.pravatar.cc/150?u=${loginUsername}`}
               />
-              <AvatarFallback>{loginUsername[0].toUpperCase()}</AvatarFallback>
+              <AvatarFallback>{(loginUsername || "?")[0].toUpperCase()}</AvatarFallback>
             </Avatar>
             <Input
               type="text"
@@ -480,6 +510,105 @@ export function TweetCard({
         editingComment={editingComment}
         onCancelEdit={cancelEditComment}
       />
+
+      {/* AI Analysis Dialog */}
+      <Dialog open={isAnalysisDialogOpen} onOpenChange={setIsAnalysisDialogOpen}>
+        <DialogContent className="max-w-2xl">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <span className="text-2xl">🧠</span>
+              AI Analysis Results
+            </DialogTitle>
+          </DialogHeader>
+          
+          {analysisLoading ? (
+            <div className="flex items-center justify-center py-8">
+              <Loader2 className="size-6 animate-spin text-purple-500" />
+              <span className="ml-2 text-muted-foreground">Analyzing tweet...</span>
+            </div>
+          ) : analysisData?.error ? (
+            <div className="text-sm text-red-500 py-4">
+              {analysisData.error}
+            </div>
+          ) : (
+            <div className="space-y-4 py-4">
+              {/* Article Detection */}
+              <div className="border-l-4 border-blue-500 pl-4 py-2">
+                <h3 className="font-semibold text-blue-600 dark:text-blue-400 flex items-center gap-2 mb-2">
+                  <span>📰</span> Article Detection ({analysisData?.articles?.length || 0})
+                </h3>
+                {analysisData?.articles && analysisData.articles.length > 0 ? (
+                  <ul className="space-y-2">
+                    {analysisData.articles.map((article: any, i: number) => (
+                      <li key={i} className="text-sm text-muted-foreground">
+                        <span className="font-medium">{article.title || article.topic}</span>
+                        {article.url && (
+                          <a 
+                            href={article.url} 
+                            target="_blank" 
+                            rel="noopener noreferrer"
+                            className="text-blue-500 hover:underline ml-2"
+                          >
+                            Link
+                          </a>
+                        )}
+                      </li>
+                    ))}
+                  </ul>
+                ) : (
+                  <p className="text-sm text-muted-foreground">No articles detected</p>
+                )}
+              </div>
+
+              {/* Product Detection */}
+              <div className="border-l-4 border-orange-500 pl-4 py-2">
+                <h3 className="font-semibold text-orange-600 dark:text-orange-400 flex items-center gap-2 mb-2">
+                  <span>🛍️</span> Product Detection ({analysisData?.products?.length || 0})
+                </h3>
+                {analysisData?.products && analysisData.products.length > 0 ? (
+                  <ul className="space-y-1">
+                    {analysisData.products.map((product: any, i: number) => (
+                      <li key={i} className="text-sm text-muted-foreground">
+                        {product.name || product}
+                      </li>
+                    ))}
+                  </ul>
+                ) : (
+                  <p className="text-sm text-muted-foreground">No products detected</p>
+                )}
+              </div>
+
+              {/* Place Detection */}
+              <div className="border-l-4 border-green-500 pl-4 py-2">
+                <h3 className="font-semibold text-green-600 dark:text-green-400 flex items-center gap-2 mb-2">
+                  <span>📍</span> Place Detection ({analysisData?.places?.length || 0})
+                </h3>
+                {analysisData?.places && analysisData.places.length > 0 ? (
+                  <ul className="space-y-1">
+                    {analysisData.places.map((place: any, i: number) => (
+                      <li key={i} className="text-sm text-muted-foreground">
+                        {place.name || place.location || place}
+                      </li>
+                    ))}
+                  </ul>
+                ) : (
+                  <p className="text-sm text-muted-foreground">No places detected</p>
+                )}
+              </div>
+
+              {/* Language Support */}
+              <div className="border-l-4 border-purple-500 pl-4 py-2">
+                <h3 className="font-semibold text-purple-600 dark:text-purple-400 flex items-center gap-2 mb-2">
+                  <span>🌐</span> Analysis Info
+                </h3>
+                <p className="text-sm text-muted-foreground">
+                  Tweet content analyzed using GPT for intelligent detection of articles, products, and locations.
+                </p>
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </>
   );
 }

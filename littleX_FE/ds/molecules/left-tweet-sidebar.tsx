@@ -35,7 +35,7 @@ interface LeftTweetSidebarProps {
   currentRoute?: string; // Add current route to determine active state
 }
 
-const LeftTweetSidebar = ({
+const LeftTweetSidebar = React.memo(({
   userData,
   navMenu,
   logout,
@@ -172,6 +172,8 @@ const LeftTweetSidebar = ({
       </div>
     </div>
   );
-};
+});
+
+LeftTweetSidebar.displayName = "LeftTweetSidebar";
 
 export default LeftTweetSidebar;

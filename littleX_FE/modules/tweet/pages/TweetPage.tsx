@@ -5,8 +5,6 @@ import React from "react";
 import LeftTweetSideBar from "@/ds/molecules/left-tweet-sidebar";
 import RightTweetSidebar from "@/ds/molecules/right-tweet-sidebar";
 import MainFeed from "@/ds/molecules/tweet-main";
-import CheckProfile from "@/ds/molecules/check-profile-dialog";
-import { ProtectedRoute } from "@/ds/wrappers/prtoected-auth";
 import {
   MobileNavBar,
   MobileBottomNav,
@@ -16,34 +14,24 @@ import {
 import ResponsiveDashboardTemplate from "@/ds/templates/responsive-dashboard-template";
 import { useDashboard } from "@/_core/hooks/useDashboard";
 
-const TweetPage = () => {
-  const {
-    profile,
-    userData,
-    following,
-    suggestions,
-    isLoading,
-    navMenu,
-    currentTab,
-    logout,
-    handleSearch,
-    handleFollow,
-    handleUnfollow,
-    feeds,
-    searchResult,
-    userTweets,
-  } = useDashboard();
-  // If profile not set up, show dialog
-  if (profile?.user?.username === "") {
-    return (
-      <ProtectedRoute>
-        <CheckProfile open={true} isLoading={isLoading} />
-      </ProtectedRoute>
-    );
-  }
-
+const TweetPageContent = React.memo(({
+  profile,
+  userData,
+  following,
+  suggestions,
+  isLoading,
+  navMenu,
+  currentTab,
+  logout,
+  handleSearch,
+  handleFollow,
+  handleUnfollow,
+  feeds,
+  searchResult,
+  userTweets,
+}: any) => {
   return (
-    <ProtectedRoute>
+    <>
       <ResponsiveDashboardTemplate
         // Mobile components
         mobileNavBar={
@@ -86,8 +74,41 @@ const TweetPage = () => {
         }
         sidebarWidth="w-72"
       />
-    </ProtectedRoute>
+    </>
   );
+}, (prevProps, nextProps) => {
+  // Custom comparison - return true if props are equal (skip re-render)
+  return (
+    prevProps.profile === nextProps.profile &&
+    prevProps.userData === nextProps.userData &&
+    prevProps.following === nextProps.following &&
+    prevProps.suggestions === nextProps.suggestions &&
+    prevProps.isLoading === nextProps.isLoading &&
+    prevProps.currentTab === nextProps.currentTab
+  );
+});
+
+const TweetPage = () => {
+  const dashboardData = useDashboard();
+  
+  // Memoize to prevent re-renders of child components
+  const memoizedData = React.useMemo(
+    () => dashboardData,
+    [
+      dashboardData.profile,
+      dashboardData.userData,
+      dashboardData.following.length,
+      dashboardData.suggestions.length,
+      dashboardData.isLoading,
+      dashboardData.navMenu,
+      dashboardData.currentTab,
+      dashboardData.feeds.length,
+      dashboardData.searchResult.length,
+      dashboardData.userTweets.length,
+    ]
+  );
+  
+  return <TweetPageContent {...memoizedData} />;
 };
 
 export default TweetPage;

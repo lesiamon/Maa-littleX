@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React from "react";
 import {
   Dialog,
   DialogContent,
@@ -15,19 +15,18 @@ interface CheckProfileProps {
   onOpenChange?: (open: boolean) => void;
 }
 
-const CheckProfile = ({ open, isLoading = false }: CheckProfileProps) => {
+const CheckProfile = ({ open, isLoading = false, onOpenChange }: CheckProfileProps) => {
   const dispatch = useAppDispatch();
-  const [dialogOpen, setDialogOpen] = React.useState(open);
   const inputRef = React.useRef<HTMLInputElement>(null);
 
-  useEffect(() => {
-    if (isLoading === false && dialogOpen) {
-      setDialogOpen(false);
+  const handleOpenChange = (newOpen: boolean) => {
+    if (onOpenChange) {
+      onOpenChange(newOpen);
     }
-  }, [isLoading]);
+  };
 
   return (
-    <Dialog open={dialogOpen || open} onOpenChange={setDialogOpen}>
+    <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogContent>
         <DialogHeader>
           <DialogTitle>Update Profile</DialogTitle>
