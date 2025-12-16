@@ -4,7 +4,7 @@ import { useForm } from "react-hook-form";
 import * as z from "zod";
 import { TweetNode } from "@/nodes/tweet-node";
 import { useTweets } from ".";
-import { useAppDispatch } from "@/store/useStore";
+import { useAppDispatch, useAppSelector } from "@/store/useStore";
 import { createTweetAction, updateTweetAction } from "../actions";
 
 interface UseTweetFormProps {
@@ -26,6 +26,7 @@ export function useTweetForm({
   tweetId,
 }: UseTweetFormProps = {}) {
   const dispatch = useAppDispatch();
+  const user = useAppSelector((state) => state.users.user);
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -34,6 +35,8 @@ export function useTweetForm({
   });
 
   const onSubmit = async (values: Pick<TweetNode, "content">) => {
+    const username = user?.username || "guest";
+
     if (mode === "edit" && tweetId) {
       dispatch(
         updateTweetAction({
@@ -42,7 +45,12 @@ export function useTweetForm({
         })
       );
     } else {
-      dispatch(createTweetAction(values.content));
+      dispatch(
+        createTweetAction({
+          content: values.content,
+          username: username,
+        })
+      );
     }
     form.reset();
     if (onSuccess) onSuccess();

@@ -9,7 +9,8 @@ export const TweetApi = {
     const data = res.data?.reports?.[0] || [];
 
     return data.map((entry: any) => {
-      const tweet = entry?.Tweet_Info?.context;
+      // Handle both formats: direct context or nested Tweet_Info
+      const tweet = entry?.Tweet_Info?.context || entry?.context || entry;
       return {
         id: tweet?.id,
         username: tweet?.username ?? "",
@@ -17,6 +18,7 @@ export const TweetApi = {
         embedding: tweet?.embedding ?? [],
         likes: Array.isArray(tweet?.likes) ? tweet.likes : [],
         comments: Array.isArray(tweet?.comments) ? tweet.comments : [],
+        created_at: tweet?.created_at ?? "",
       } as TweetNode;
     }) as TweetNode[];
   },
@@ -28,7 +30,8 @@ export const TweetApi = {
     const data = res.data?.reports?.[0] || [];
 
     const result = data.map((entry: any) => {
-      const tweet = entry?.Tweet_Info?.context;
+      // Handle both formats: direct context or nested Tweet_Info
+      const tweet = entry?.Tweet_Info?.context || entry?.context || entry;
       return {
         id: tweet?.id,
         username: tweet?.username ?? "",
@@ -36,15 +39,27 @@ export const TweetApi = {
         embedding: tweet?.embedding ?? [],
         likes: Array.isArray(tweet?.likes) ? tweet.likes : [],
         comments: Array.isArray(tweet?.comments) ? tweet.comments : [],
+        created_at: tweet?.created_at ?? "",
       } as TweetNode;
     }) as TweetNode[];
 
     return result;
   },
 
-  createTweet: async (content: string) => {
-    const response = await private_api.post("/walker/create_tweet", {
-      content,
+  createTweet: async (content: string, file?: File, username?: string) => {
+    const formData = new FormData();
+    formData.append("content", content);
+    if (file) {
+      formData.append("file", file);
+    }
+    if (username) {
+      formData.append("username", username);
+    }
+    
+    const response = await private_api.post("/walker/create_tweet", formData, {
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
     });
     const tweets = response.data?.reports || [];
     const tweet = tweets[0]?.[0] || {};
@@ -55,8 +70,8 @@ export const TweetApi = {
       embedding: tweet?.context?.embedding || [],
       id: tweet?.id || "",
       likes: [],
-      username: "",
-      created_at: tweet?.context?.created_at || "",
+      username: tweet?.context?.username || "",
+      created_at: tweet?.context?.created_at || new Date().toISOString(),
     };
 
     return tweetData;

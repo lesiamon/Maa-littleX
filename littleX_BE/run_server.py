@@ -6,12 +6,13 @@ import secrets
 import time
 from pathlib import Path
 from typing import Optional, List
-from datetime import datetime
+from datetime import datetime, timezone
 from contextlib import asynccontextmanager
 from dotenv import load_dotenv
 
 # Load environment variables from .env file
-load_dotenv()
+env_path = Path(__file__).parent / ".env"
+load_dotenv(dotenv_path=env_path)
 
 from fastapi import FastAPI, Request, Form, File, UploadFile, HTTPException, Body
 from fastapi.responses import JSONResponse, FileResponse, StreamingResponse
@@ -100,12 +101,15 @@ def run_walker(walker_name: str, payload: dict) -> dict:
     """Execute a walker with the given payload."""
     try:
         if walker_name == "create_tweet":
+            # Get username from payload or use default
+            username = payload.get("username", "guest")
+            
             tweet = {
                 "id": str(uuid.uuid4()),
                 "content": payload.get("content", ""),
                 "media": payload.get("media", []),
-                "created_at": datetime.utcnow().isoformat(),
-                "username": payload.get("username", "anon"),
+                "created_at": datetime.now(timezone.utc).isoformat(),
+                "username": username,
                 "comments": [],
                 "likes": []
             }
@@ -331,22 +335,22 @@ async def remove_comment(comment_id: str, request: Request):
 
 # === Assistant Endpoints ===
 
-async def call_gpt_api(prompt: str, system_message: str = "You are a helpful assistant.") -> str:
-    """Call OpenAI GPT API asynchronously with proper error handling."""
-    OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
+async def call_deepseek_api(prompt: str, system_message: str = "You are a helpful assistant.") -> str:
+    """Call DeepSeek API asynchronously with proper error handling."""
+    DEEPSEEK_API_KEY = os.getenv("DEEPSEEK_API_KEY")
     
-    if not OPENAI_API_KEY:
-        print("Warning: OPENAI_API_KEY not set. Using mock responses.")
+    if not DEEPSEEK_API_KEY:
+        print("Warning: DEEPSEEK_API_KEY not set. Using mock responses.")
         return "[Mock Response] " + prompt[:100]
     
     try:
         headers = {
-            "Authorization": f"Bearer {OPENAI_API_KEY}",
+            "Authorization": f"Bearer {DEEPSEEK_API_KEY}",
             "Content-Type": "application/json"
         }
         
         data = {
-            "model": "gpt-3.5-turbo",
+            "model": "deepseek-chat",
             "messages": [
                 {"role": "system", "content": system_message},
                 {"role": "user", "content": prompt}
@@ -358,7 +362,7 @@ async def call_gpt_api(prompt: str, system_message: str = "You are a helpful ass
         # Use async HTTP client
         async with httpx.AsyncClient(timeout=15) as client:
             response = await client.post(
-                "https://api.openai.com/v1/chat/completions",
+                "https://api.deepseek.com/chat/completions",
                 headers=headers,
                 json=data
             )
@@ -367,12 +371,16 @@ async def call_gpt_api(prompt: str, system_message: str = "You are a helpful ass
             result = response.json()
             return result["choices"][0]["message"]["content"].strip()
         else:
-            print(f"GPT API error: {response.status_code} - {response.text}")
+            print(f"DeepSeek API error: {response.status_code} - {response.text}")
             return f"[Error] Could not process request (Status: {response.status_code})"
             
     except Exception as e:
-        print(f"Error calling GPT API: {e}")
+        print(f"Error calling DeepSeek API: {e}")
         return f"[Error] Failed to call AI: {str(e)}"
+
+
+# Backward compatibility alias
+call_gpt_api = call_deepseek_api
 
 async def extract_articles_gpt(text: str) -> List[dict]:
     """Use GPT to extract article references from text."""
@@ -723,13 +731,57 @@ Return as JSON array with these fields. Return ONLY JSON, no other text."""
     
     return {"articles": articles, "context_analyzed": context}
 
+# === Tweet Summary Function ===
+
+async def generate_tweet_summary(text: str) -> str:
+    """Generate a concise summary of the tweet content using GPT."""
+    prompt = f"""Provide a brief, insightful summary of this tweet in 1-2 sentences. Be concise and highlight the main point.
+
+Tweet: "{text}"
+
+Summary:"""
+    
+    response = await call_gpt_api(
+        prompt,
+        "You are an AI that creates concise, insightful summaries of tweets."
+    )
+    
+    # If GPT fails (contains [Error]) or returns empty, use keyword-based summary
+    if not response or response.strip() == "" or "[Error]" in response:
+        # Create a simple summary from keywords - take first sentence or first 100 chars
+        text_clean = text.strip()
+        if len(text_clean) > 150:
+            # Take first sentence or first 150 chars
+            sentences = text_clean.split('.')
+            if len(sentences) > 0 and len(sentences[0]) > 0:
+                summary = sentences[0].strip() + "..."
+            else:
+                summary = text_clean[:150] + "..."
+        else:
+            summary = text_clean
+        return summary
+    
+    return response.strip()
+
 # === Tweet Analysis Endpoint ===
 
 @app.post("/assistant/analyze_tweet")
 async def analyze_tweet(request: Request):
     """Analyze tweet content for articles, products, and places using GPT."""
     try:
-        payload = await request.json()
+        content_type = request.headers.get("content-type", "")
+        payload = {}
+        
+        if "application/json" in content_type:
+            payload = await request.json()
+        else:
+            # Try to parse as JSON anyway
+            try:
+                body = await request.body()
+                payload = json.loads(body) if body else {}
+            except:
+                payload = {}
+        
         tweet_content = payload.get("content", "")
         
         if not tweet_content:
@@ -738,21 +790,13 @@ async def analyze_tweet(request: Request):
                 content={"error": "No tweet content provided"}
             )
         
-        # Extract articles
-        articles = await extract_articles_gpt(tweet_content)
-        
-        # Extract products
-        products = await extract_products_gpt(tweet_content)
-        
-        # Extract places
-        places = await extract_places_gpt(tweet_content)
+        # Generate summary using GPT
+        summary = await generate_tweet_summary(tweet_content)
         
         return JSONResponse(
             status_code=200,
             content={
-                "articles": articles,
-                "products": products,
-                "places": places,
+                "summary": summary,
                 "content_analyzed": tweet_content
             }
         )

@@ -16,9 +16,18 @@ export const fetchTweetsAction = createAsyncThunk(
 );
 export const createTweetAction = createAsyncThunk(
   "tweet/create",
-  async (content: string, { rejectWithValue }) => {
+  async (
+    payload: { content: string; username?: string; file?: File },
+    { rejectWithValue }
+  ) => {
     try {
-      const response = await TweetApi.createTweet(content);
+      const content =
+        typeof payload === "string" ? payload : payload.content;
+      const username =
+        typeof payload === "string" ? undefined : payload.username;
+      const file = typeof payload === "string" ? undefined : payload.file;
+
+      const response = await TweetApi.createTweet(content, file, username);
 
       return response;
     } catch (error) {

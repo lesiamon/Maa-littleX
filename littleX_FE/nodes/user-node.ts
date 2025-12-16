@@ -1,5 +1,6 @@
 export interface UserNode {
   id: string;
+  username?: string;
   email: string;
   root_id: string;
   is_activated: boolean;

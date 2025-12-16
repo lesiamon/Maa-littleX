@@ -23,22 +23,24 @@ def process_multipart_create_tweet(form_data):
         dict: Processed payload with content, username, and media list
     """
     try:
+        # FastAPI FormData is a starlette FormData object that acts like a dict
         payload = {
-            "content": getattr(form_data, "content", ""),
-            "username": getattr(form_data, "username", "anon"),
+            "content": form_data.get("content") or "",
+            "username": form_data.get("username") or "anon",
             "media": []
         }
         
         # Process any uploaded files
-        if hasattr(form_data, "media") and form_data.media:
-            files = form_data.media if isinstance(form_data.media, list) else [form_data.media]
-            for file in files:
-                if file and file.filename:
-                    payload["media"].append(file.filename)
+        if "file" in form_data:
+            file = form_data["file"]
+            if file and hasattr(file, "filename") and file.filename:
+                payload["media"].append(file.filename)
         
         return payload
     except Exception as e:
         print(f"Error processing multipart data: {e}")
+        import traceback
+        traceback.print_exc()
         return {
             "content": "",
             "username": "anon",

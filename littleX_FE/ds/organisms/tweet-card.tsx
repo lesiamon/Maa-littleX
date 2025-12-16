@@ -306,9 +306,10 @@ export function TweetCard({
 
   // Fetch analysis when dialog opens
   useEffect(() => {
-    if (isAnalysisDialogOpen && !analysisData) {
+    if (isAnalysisDialogOpen) {
       const fetchAnalysis = async () => {
         setAnalysisLoading(true);
+        setAnalysisData(null); // Clear previous data immediately
         try {
           const response = await private_api.post("/assistant/analyze_tweet", {
             content: content,
@@ -322,8 +323,11 @@ export function TweetCard({
         }
       };
       fetchAnalysis();
+    } else {
+      // Clear analysis data when dialog closes
+      setAnalysisData(null);
     }
-  }, [isAnalysisDialogOpen, analysisData, content]);
+  }, [isAnalysisDialogOpen, id, content]);
 
   const loginUsername: string = profile.username;
 
@@ -413,13 +417,13 @@ export function TweetCard({
             className="w-full mt-3 p-3 bg-gradient-to-r from-purple-500/10 to-blue-500/10 border border-purple-500/20 rounded-lg hover:border-purple-500/40 hover:from-purple-500/15 hover:to-blue-500/15 transition-all cursor-pointer"
           >
             <div className="flex items-center gap-2 mb-2">
-              <span className="text-lg">🧠</span>
+              <span className="text-lg" lang="en">\ud83e\udde0</span>
               <span className="text-xs font-semibold text-purple-600 dark:text-purple-400">Click for AI Analysis</span>
             </div>
             <div className="text-xs text-muted-foreground space-y-1 text-left">
-              <div>📰 <span className="font-medium">Article Detection:</span> Analyzing...</div>
-              <div>🛍️ <span className="font-medium">Product Detection:</span> Checking...</div>
-              <div>📍 <span className="font-medium">Place Detection:</span> Identifying...</div>
+              <div>\ud83d\udcf0 <span className="font-medium">Article Detection:</span> Analyzing...</div>
+              <div>\ud83d\uded1 <span className="font-medium">Product Detection:</span> Checking...</div>
+              <div>\ud83d\udcc4 <span className="font-medium">Place Detection:</span> Identifying...</div>
             </div>
           </button>
         </CardContent>
@@ -532,79 +536,37 @@ export function TweetCard({
             </div>
           ) : (
             <div className="space-y-4 py-4">
-              {/* Article Detection */}
-              <div className="border-l-4 border-blue-500 pl-4 py-2">
-                <h3 className="font-semibold text-blue-600 dark:text-blue-400 flex items-center gap-2 mb-2">
-                  <span>📰</span> Article Detection ({analysisData?.articles?.length || 0})
-                </h3>
-                {analysisData?.articles && analysisData.articles.length > 0 ? (
-                  <ul className="space-y-2">
-                    {analysisData.articles.map((article: any, i: number) => (
-                      <li key={i} className="text-sm text-muted-foreground">
-                        <span className="font-medium">{article.title || article.topic}</span>
-                        {article.url && (
-                          <a 
-                            href={article.url} 
-                            target="_blank" 
-                            rel="noopener noreferrer"
-                            className="text-blue-500 hover:underline ml-2"
-                          >
-                            Link
-                          </a>
-                        )}
-                      </li>
-                    ))}
-                  </ul>
-                ) : (
-                  <p className="text-sm text-muted-foreground">No articles detected</p>
-                )}
-              </div>
-
-              {/* Product Detection */}
-              <div className="border-l-4 border-orange-500 pl-4 py-2">
-                <h3 className="font-semibold text-orange-600 dark:text-orange-400 flex items-center gap-2 mb-2">
-                  <span>🛍️</span> Product Detection ({analysisData?.products?.length || 0})
-                </h3>
-                {analysisData?.products && analysisData.products.length > 0 ? (
-                  <ul className="space-y-1">
-                    {analysisData.products.map((product: any, i: number) => (
-                      <li key={i} className="text-sm text-muted-foreground">
-                        {product.name || product}
-                      </li>
-                    ))}
-                  </ul>
-                ) : (
-                  <p className="text-sm text-muted-foreground">No products detected</p>
-                )}
-              </div>
-
-              {/* Place Detection */}
-              <div className="border-l-4 border-green-500 pl-4 py-2">
-                <h3 className="font-semibold text-green-600 dark:text-green-400 flex items-center gap-2 mb-2">
-                  <span>📍</span> Place Detection ({analysisData?.places?.length || 0})
-                </h3>
-                {analysisData?.places && analysisData.places.length > 0 ? (
-                  <ul className="space-y-1">
-                    {analysisData.places.map((place: any, i: number) => (
-                      <li key={i} className="text-sm text-muted-foreground">
-                        {place.name || place.location || place}
-                      </li>
-                    ))}
-                  </ul>
-                ) : (
-                  <p className="text-sm text-muted-foreground">No places detected</p>
-                )}
-              </div>
-
-              {/* Language Support */}
+              {/* AI Summary */}
               <div className="border-l-4 border-purple-500 pl-4 py-2">
                 <h3 className="font-semibold text-purple-600 dark:text-purple-400 flex items-center gap-2 mb-2">
-                  <span>🌐</span> Analysis Info
+                  <span>✨</span> Summary (DeepSeek Analysis)
                 </h3>
-                <p className="text-sm text-muted-foreground">
-                  Tweet content analyzed using GPT for intelligent detection of articles, products, and locations.
+                <p className="text-sm text-muted-foreground leading-relaxed whitespace-pre-wrap">
+                  {analysisData?.summary || "No summary available"}
                 </p>
               </div>
+              
+              {/* Links from tweet */}
+              {content && /https?:\/\/[^\s]+/g.test(content) && (
+                <div className="border-l-4 border-blue-500 pl-4 py-2">
+                  <h3 className="font-semibold text-blue-600 dark:text-blue-400 flex items-center gap-2 mb-2">
+                    <span>🔗</span> Links Mentioned
+                  </h3>
+                  <div className="text-sm space-y-1">
+                    {(content.match(/https?:\/\/[^\s]+/g) || []).map((link, idx) => (
+                      <a
+                        key={idx}
+                        href={link}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-blue-500 hover:text-blue-600 dark:hover:text-blue-400 underline break-all block"
+                      >
+                        {link}
+                      </a>
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
           )}
         </DialogContent>

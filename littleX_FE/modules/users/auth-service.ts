@@ -69,6 +69,7 @@ export const AuthService = {
     if (!token || !user) {
       const demoUser: UserNode = {
         id: "demo-user-001",
+        username: "littlex_user",
         email: "demo@littlex.local",
         root_id: "root-demo",
         is_activated: true,
@@ -83,6 +84,7 @@ export const AuthService = {
     }
     return {
       id: user.id || "",
+      username: user.username || "littlex_user",
       email: user.email || "",
       root_id: user.root_id || "",
       is_activated: user.is_activated || false,
